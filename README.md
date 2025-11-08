@@ -27,6 +27,37 @@ cd b2c-backend
 pnpm install
 ```
 
+## Start App (Development)
+
+1. Ensure Docker is installed and running.
+2. Install dependencies (if not already):
+```bash
+pnpm install
+```
+3. Copy environment file:
+```bash
+cp .env.example .env  # or create .env manually if example is missing
+```
+   - Set at least:
+     - `DATABASE_URL=postgresql://<DB_USER>:<DB_PASSWORD>@localhost:<DB_PORT>/<DB_NAME>?schema=public`
+     - `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_PORT` (used by docker-compose)
+4. Start local PostgreSQL with Docker Compose:
+```bash
+docker compose up -d postgres
+```
+5. Migrate current schema:
+```bash
+pnpm prisma:migrate
+```
+6. Seed database (optional):
+```bash
+pnpm prisma:seed
+```
+7. Start the app in development:
+```bash
+pnpm start:dev
+```
+
 ## Running the Application
 
 ### Development Mode
@@ -75,6 +106,9 @@ http://localhost:3000
 ```
 b2c-backend/
 ├── src/
+│   ├── database/               # Database module & Prisma service
+│   │   ├── database.module.ts
+│   │   └── prisma.service.ts
 │   ├── order-example/          # Order module (example implementation)
 │   │   ├── dto/                # Data Transfer Objects
 │   │   │   ├── create-order.dto.ts
@@ -89,6 +123,10 @@ b2c-backend/
 │   ├── app.controller.ts       # Root controller
 │   ├── app.service.ts          # Root service
 │   └── main.ts                 # Application entry point
+├── prisma/                     # Prisma ORM
+│   ├── schema.prisma
+│   └── seed.ts
+├── docker-compose.yml          # Local Postgres
 ├── test/                       # E2E tests
 ├── dist/                       # Compiled JavaScript
 ├── package.json                # Dependencies & scripts
@@ -197,6 +235,42 @@ export class FeatureController {
 - Create `feature.controller.spec.ts` for controller tests
 
 ### Database Integration
+
+#### Prisma
+
+This project uses Prisma as the ORM.
+
+- **Environment**: set `DATABASE_URL` in `.env` (see `DATABASE_SETUP.md`).
+- **Generate client**:
+```bash
+pnpm prisma:generate
+```
+- **Create and run migrations (dev)**:
+```bash
+pnpm prisma:migrate
+```
+- **Apply migrations (prod/CI)**:
+```bash
+pnpm prisma:migrate:deploy
+```
+- **Push schema without migrations (non‑prod)**:
+```bash
+pnpm db:push
+```
+- **Seed data**:
+```bash
+pnpm prisma:seed
+```
+- **Prisma Studio**:
+```bash
+pnpm prisma:studio
+```
+
+Troubleshooting:
+- If you see `Module "@prisma/client" has no exported member "PrismaClient"`, run `pnpm prisma:generate` to (re)generate the client.
+
+Docker:
+- Start Postgres via `docker-compose.yml`, set `DATABASE_URL`, then run the commands above.
 
 ## Additional Resources
 
