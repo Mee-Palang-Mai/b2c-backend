@@ -14,12 +14,12 @@ datasource db {
 
 model User {
   id        String   @id @default(uuid())
+  cognitoSub String   @unique
   email     String   @unique
   firstName String?
   lastName  String?
   phone     String?
-  password  String
-  role      UserRole @default(CUSTOMER)
+  role      UserRole @default(EMPLOYEE)
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -28,24 +28,7 @@ model User {
 }
 
 enum UserRole {
-  CUSTOMER
   ADMIN
-  VENDOR
-}
-
-model Product {
-  id          String   @id @default(uuid())
-  name        String
-  description String?
-  price       Decimal  @db.Decimal(10, 2)
-  sku         String   @unique
-  stock       Int      @default(0)
-  category    String?
-  imageUrl    String?
-  isActive    Boolean  @default(true)
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@map("products")
+  SUPERVISOR
+  EMPLOYEE
 }
