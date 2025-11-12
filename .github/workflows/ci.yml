@@ -23,7 +23,7 @@ jobs:
           node-version: '22'
           
       - name: Install Dependencies
-        run: npm ci
+        run: npm install
 
       - name: Run Tests (Unit/Integration)
         run: npm run test
