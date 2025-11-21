@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,21 +7,197 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Example Models - Customize based on your B2C requirements
-
 model User {
-  id        String   @id @default(uuid())
-  cognitoSub String   @unique
-  email     String   @unique
-  firstName String?
-  lastName  String?
-  phone     String?
-  role      UserRole @default(EMPLOYEE)
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  empId        Int      @id @map("Emp_ID")
+  empNo        String   @map("Emp_No")
+  username     String   @map("Username")
+  password     String   @map("Password")
+  name         String   @map("Name")
+  nickName     String?  @map("Nick_Name")
+  phoneNumber  String?  @map("Phone_Number")
+  email        String?  @map("Email")
+  teamLevel    String?  @map("Team_Level")
+  workStart    DateTime @map("Work_Start_Date")
+  workStatus   String   @map("Work_Status")
+  createDate   DateTime @map("Create_Date")
+  updateDate   DateTime @map("Update_Date")
 
-  @@map("users")
+  @@map("User")
+}
+
+model Holiday {
+  holidayId   Int      @id @map("Holiday_ID")
+  holidayDate DateTime @map("Holiday_Date")
+  createDate  DateTime @map("Create_Date")
+  updateDate  DateTime @map("Update_Date")
+  approveBy   String?  @map("Approve_By")
+
+  @@map("Holiday")
+}
+
+model Loginout {
+  transactionId Int      @id @map("Transaction_ID")
+  empId         Int      @map("Emp_ID")
+  status        String   @map("Status")
+  timestamp     DateTime @map("Timestamp")
+
+  @@map("Loginout")
+}
+
+model CheckIn {
+  checkinTransactionId Int      @id @map("CheckinTransaction_ID")
+  empId                Int      @map("Emp_ID")
+  latitude             Float    @map("Latitude")
+  longitude            Float    @map("Longitude")
+  status               String   @map("Status")
+  timestamp            DateTime @map("Timestamp")
+  createDate           DateTime @map("Create_Date")
+  updateDate           DateTime @map("Update_Date")
+  startWorkingTime     String?  @map("Start_Working_Time")
+
+  @@map("Check-in")
+}
+
+model CheckOut {
+  checkoutTransactionId Int      @id @map("CheckoutTransaction_ID")
+  empId                 Int      @map("Emp_ID")
+  latitude              Float    @map("Latitude")
+  longitude             Float    @map("Longitude")
+  status                String   @map("Status")
+  timestamp             DateTime @map("Timestamp")
+  createDate            DateTime @map("Create_Date")
+  updateDate            DateTime @map("Update_Date")
+  endWorkingTime        String?  @map("End_Working_Time")
+  isOt                  Boolean? @map("Is_OT")
+
+  @@map("Check-out")
+}
+
+model OT {
+  otId       Int      @id @map("OT_ID")
+  empId      Int      @map("Emp_ID")
+  otTime     String?  @map("OT_Time")
+  createDate DateTime @map("Create_Date")
+  updateDate DateTime @map("Update_Date")
+
+  @@map("OT")
+}
+
+model Store {
+  storeNo     Int      @id @map("Store_No")
+  storeName   String   @map("Store_Name")
+  storeType   String   @map("Store_Type")
+  latitude    Float    @map("Latitude")
+  longitude   Float    @map("Longitude")
+  createDate  DateTime @map("Create_Date")
+  updateDate  DateTime @map("Update_Date")
+
+  @@map("Store")
+}
+
+model Task {
+  taskId    Int      @id @map("Task_ID")
+  empId     Int      @map("Emp_ID")
+  kpiNo     Int?     @map("KPi_No")
+  zoneNo    Int?     @map("Zone_No")
+  storeNo   Int?     @map("Store_No")
+  date      DateTime @map("Date")
+  startTime DateTime @map("Start_Time")
+  endTime   DateTime @map("End_Time")
+  status    String   @map("Status")
+
+  @@map("Task")
+}
+
+model Payroll {
+  payrollId    Int      @id @map("Payroll_ID")
+  empId        Int      @map("Emp_ID")
+  salary       Float?   @map("Salary")
+  incentivePay Float?   @map("Incentive_Pay")
+  extraTotal   Float?   @map("Extra_Total")
+  deductTotal  Float?   @map("Deduct_Total")
+  totalPay     Float?   @map("Total_Pay")
+  createDate   DateTime @map("Create_Date")
+  updateDate   DateTime @map("Update_Date")
+
+  @@map("Payroll")
+}
+
+model ExtraPay {
+  requestId   Int      @id @map("Request_ID")
+  empId       Int      @map("Emp_ID")
+  extraTypeId Int      @map("Extra_Type_ID")
+  status      String   @map("Status")
+  amount      Float?   @map("Extra_Pay")
+  startDate   DateTime @map("Start_Date")
+  endDate     DateTime @map("End_Date")
+  createDate  DateTime @map("Create_Date")
+  updateDate  DateTime @map("Update_Date")
+
+  @@map("Extra pay Request")
+}
+
+model ExtraPayType {
+  extraTypeId Int     @id @map("Extra_Type_ID")
+  typeName    String  @map("Type_Name")
+  rateType    String? @map("Rate_Type")
+
+  @@map("Extra pay Type")
+}
+
+model DeductRequest {
+  requestId    Int      @id @map("Request_ID")
+  empId        Int      @map("Emp_ID")
+  deductTypeId Int      @map("Deduct_Type_ID")
+  status       String   @map("Status")
+  amount       Float?   @map("Deduct_Pay")
+  note         String?  @map("Note")
+  createDate   DateTime @map("Create_Date")
+  updateDate   DateTime @map("Update_Date")
+
+  @@map("Deduct Request")
+}
+
+model DeductTotal {
+  deductTypeId Int    @id @map("Deduct_Type_ID")
+  typeName     String @map("Type_Name")
+  deductRate   Float? @map("Deduct_Rate")
+  rateType     String? @map("Rate_Type")
+
+  @@map("Deduct Total")
+}
+
+model LeaveType {
+  leaveTypeId Int    @id @map("Leave_Type_ID")
+  typeName    String @map("Type_Name")
+
+  @@map("Leave Type")
+}
+
+model LeaveBalance {
+  empId        Int   @map("Emp_ID")
+  leaveTypeId  Int   @map("Leave_Type_ID")
+  leaveCount   Int?  @map("Leave_Count")
+  leaveBalance Int?  @map("Leave_Balance")
+
+  @@id([empId, leaveTypeId])
+
+  @@map("Leave Balance")
+}
+
+model LeaveRequest {
+  requestId    Int      @id @map("Request_ID")
+  empId        Int      @map("Emp_ID")
+  leaveTypeId  Int      @map("Leave_Type_ID")
+  leaveCount   Int?     @map("Leave_Count")
+  leaveBalance Int?     @map("Leave_Balance")
+  reason       String?  @map("Leave_Reason")
+  startDate    DateTime @map("Start_Date")
+  endDate      DateTime @map("End_Date")
+  createDate   DateTime @map("Create_Date")
+  updateDate   DateTime @map("Update_Date")
+
+  @@map("Leave Request")
 }
 
 enum UserRole {
