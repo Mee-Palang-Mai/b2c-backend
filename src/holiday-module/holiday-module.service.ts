@@ -1,4 +1,17 @@
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
-export class HolidayModuleService {}
+export class HolidayModuleService {
+  deleteHolidays(id: string) {
+    throw new Error('Method not implemented.');
+  }
+  putHolidays(id: string) {
+    throw new Error('Method not implemented.');
+  }
+  postHolidays() {
+    throw new Error('Method not implemented.');
+  }
+  getHolidays() {
+    throw new Error('Method not implemented.');
+  }
+}
