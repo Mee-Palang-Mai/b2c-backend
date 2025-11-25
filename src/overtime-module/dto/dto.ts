@@ -1,25 +1,13 @@
-import { IsNotEmpty, IsString, IsDateString, IsOptional, IsNumber, IsEnum } from 'class-validator';
+import { IsNotEmpty, IsString, IsDateString, IsOptional, IsNumber, IsEnum, IsInt } from 'class-validator';
 
 export class CreateOvertimeRequestDto {
-  @IsNotEmpty()
-  @IsDateString()
-  date: string; // วันที่ทำ OT
-
-  @IsNotEmpty()
   @IsString()
-  startTime: string; // เวลาเริ่ม เช่น "18:00"
-
   @IsNotEmpty()
-  @IsString()
-  endTime: string; // เวลาจบ เช่น "21:00"
+  id: string;   // empId
 
-  @IsOptional()
-  @IsString()
-  reason?: string; // เหตุผลการทำ OT
-
-  @IsOptional()
   @IsNumber()
-  projectId?: number; // ถ้ามีการผูก project
+  @IsNotEmpty()
+  time: number; // otTime
 }
 
 export enum OvertimeStatus {
