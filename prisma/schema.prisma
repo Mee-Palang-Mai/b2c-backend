@@ -12,12 +12,13 @@ model User {
   empNo        String   @map("Emp_No")
   username     String   @map("Username")
   password     String   @map("Password")
-  cognitoSub   String   @map("Cognito_Sub")
-  name         String   @map("Name")
+  name         String   @map("Emp_Name")
   nickName     String?  @map("Nick_Name")
+  registNo     String?  @map("Regist_No")
   phoneNumber  String?  @map("Phone_Number")
   email        String?  @map("Email")
-  teamLevel    String?  @map("Team_Level")
+  empLevel     String?  @map("Emp_Level")
+  teamId       String?  @map("Team_Id")
   workStart    DateTime @map("Work_Start_Date")
   workStatus   String   @map("Work_Status")
   createDate   DateTime @map("Create_Date")
@@ -46,8 +47,9 @@ model Loginout {
 }
 
 model CheckIn {
-  checkinTransactionId Int      @id @map("CheckinTransaction_ID")
+  checkinTransactionId Int      @id @map("Checkin_Transaction_ID")
   empId                Int      @map("Emp_ID")
+  storeId              Int      @map("Store_ID")
   latitude             Float    @map("Latitude")
   longitude            Float    @map("Longitude")
   status               String   @map("Status")
@@ -60,8 +62,10 @@ model CheckIn {
 }
 
 model CheckOut {
-  checkoutTransactionId Int      @id @map("CheckoutTransaction_ID")
+  checkoutTransactionId Int      @id @map("Checkout_Transaction_ID")
+  checkinTransactionId  Int      @map("Checkin_Transaction_ID")
   empId                 Int      @map("Emp_ID")
+  storeId               Int      @map("Store_ID")
   latitude              Float    @map("Latitude")
   longitude             Float    @map("Longitude")
   status                String   @map("Status")
@@ -75,17 +79,17 @@ model CheckOut {
 }
 
 model OT {
-  otId       Int      @id @map("OT_ID")
-  empId      Int      @map("Emp_ID")
-  otTime     String?  @map("OT_Time")
-  createDate DateTime @map("Create_Date")
-  updateDate DateTime @map("Update_Date")
+  otId Int @id @default(autoincrement()) @map("OT_ID")
+  empId      String?      @map("Emp_ID")
+  otTime     Int          @map("OT_Time")
+  createDate DateTime     @map("Create_Date")
+  updateDate DateTime     @map("Update_Date")
 
   @@map("OT")
 }
 
 model Store {
-  storeNo     Int      @id @map("Store_No")
+  storeId     Int      @id @map("Store_ID")
   storeName   String   @map("Store_Name")
   storeType   String   @map("Store_Type")
   latitude    Float    @map("Latitude")
@@ -99,7 +103,7 @@ model Store {
 model Task {
   taskId    Int      @id @map("Task_ID")
   empId     Int      @map("Emp_ID")
-  kpiNo     Int?     @map("KPi_No")
+  routeNo     Int?     @map("Route_No")
   zoneNo    Int?     @map("Zone_No")
   storeNo   Int?     @map("Store_No")
   date      DateTime @map("Date")
@@ -125,13 +129,26 @@ model Payroll {
 }
 
 model ExtraPay {
+  empId       Int      @id @map("Emp_ID")
+  extraTypeId Int      @map("Extra_Type_ID")
+  amount      Float?   @map("Extra_Pay")
+  createDate  DateTime @map("Create_Date")
+  updateDate  DateTime @map("Update_Date")
+
+  @@map("Extra pay")
+}
+
+model ExtraPayRequest {
   requestId   Int      @id @map("Request_ID")
   empId       Int      @map("Emp_ID")
   extraTypeId Int      @map("Extra_Type_ID")
   status      String   @map("Status")
-  amount      Float?   @map("Extra_Pay")
+  note        String   @map("Note")
+  approveBy   String?  @map("Approve_By")
   startDate   DateTime @map("Start_Date")
   endDate     DateTime @map("End_Date")
+  startTime   DateTime @map("Start_Time")
+  endTime     DateTime @map("End_Time")
   createDate  DateTime @map("Create_Date")
   updateDate  DateTime @map("Update_Date")
 
@@ -141,6 +158,7 @@ model ExtraPay {
 model ExtraPayType {
   extraTypeId Int     @id @map("Extra_Type_ID")
   typeName    String  @map("Type_Name")
+  payRate    String? @map("Pay_Rate")
   rateType    String? @map("Rate_Type")
 
   @@map("Extra pay Type")
@@ -151,8 +169,8 @@ model DeductRequest {
   empId        Int      @map("Emp_ID")
   deductTypeId Int      @map("Deduct_Type_ID")
   status       String   @map("Status")
-  amount       Float?   @map("Deduct_Pay")
-  note         String?  @map("Note")
+  note        String   @map("Note")
+  approveBy   String?  @map("Approve_By")
   createDate   DateTime @map("Create_Date")
   updateDate   DateTime @map("Update_Date")
 
@@ -160,12 +178,22 @@ model DeductRequest {
 }
 
 model DeductTotal {
+  empId        Int      @id @map("Emp_ID")
+  deductTypeId Int      @map("Deduct_Type_ID")
+  amount       Float?   @map("Deduct_Total")
+  createDate   DateTime @map("Create_Date")
+  updateDate   DateTime @map("Update_Date")
+
+  @@map("Deduct Total")
+}
+
+model DeductType {
   deductTypeId Int    @id @map("Deduct_Type_ID")
   typeName     String @map("Type_Name")
   deductRate   Float? @map("Deduct_Rate")
   rateType     String? @map("Rate_Type")
 
-  @@map("Deduct Total")
+  @@map("Deduct Type")
 }
 
 model LeaveType {
@@ -190,11 +218,15 @@ model LeaveRequest {
   requestId    Int      @id @map("Request_ID")
   empId        Int      @map("Emp_ID")
   leaveTypeId  Int      @map("Leave_Type_ID")
+  status       String   @map("Status")
+  note        String   @map("Note")
   leaveCount   Int?     @map("Leave_Count")
   leaveBalance Int?     @map("Leave_Balance")
-  reason       String?  @map("Leave_Reason")
+  approveBy   String?  @map("Approve_By")
   startDate    DateTime @map("Start_Date")
   endDate      DateTime @map("End_Date")
+  startTime   DateTime @map("Start_Time")
+  endTime     DateTime @map("End_Time")
   createDate   DateTime @map("Create_Date")
   updateDate   DateTime @map("Update_Date")
 
