@@ -5,29 +5,28 @@ import { RoutesModuleService } from './routes-module.service';
 export class RoutesModuleController {
   constructor(private readonly routesModuleService: RoutesModuleService) {}
 
-@Get()
+  @Get()
   getRoutes() {
     return this.routesModuleService.getRoutes();
-}
-  
-@Get(':id')
+  }
+
+  @Get(':id')
   getRoutesById(@Param('id') id: string) {
     return this.routesModuleService.getRoutesById(id);
-}
+  }
 
-@Get('team')
+  @Get('team')
   getRoutesTeam() {
     return this.routesModuleService.getRoutesTeam();
-}
+  }
 
-@Post()
+  @Post()
   postRoutes() {
     return this.routesModuleService.postRoutes();
-}
+  }
 
-@Post(':id')
+  @Post(':id')
   postRoutesById(@Param('id') id: string) {
     return this.routesModuleService.postRoutesById(id);
-}
-
+  }
 }

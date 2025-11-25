@@ -11,7 +11,9 @@ describe('IncentiveModuleController', () => {
       providers: [IncentiveModuleService],
     }).compile();
 
-    controller = module.get<IncentiveModuleController>(IncentiveModuleController);
+    controller = module.get<IncentiveModuleController>(
+      IncentiveModuleController,
+    );
   });
 
   it('should be defined', () => {

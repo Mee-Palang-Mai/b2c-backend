@@ -1,4 +1,4 @@
-import { CreateOvertimeRequestDto,UpdateOvertimeStatusDto } from './dto';
+import { CreateOvertimeRequestDto, UpdateOvertimeStatusDto } from './dto';
 
 describe('Dto', () => {
   it('should be defined', () => {

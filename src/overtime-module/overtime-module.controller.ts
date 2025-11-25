@@ -1,42 +1,55 @@
-import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  Body,
+  Req,
+  UseGuards,
+  Put,
+} from '@nestjs/common';
 import { OvertimeModuleService } from './overtime-module.service';
+// import { JwtAuthGuard } from '../auth/jwt-auth.guard'; // สมมติใช้ Cognito/JWT
 import { CreateOvertimeRequestDto, UpdateOvertimeStatusDto } from './dto/dto';
 
 @Controller('overtime')
+// @UseGuards(JwtAuthGuard)
 export class OvertimeModuleController {
   constructor(private readonly overtimeModuleService: OvertimeModuleService) {}
 
   // 1) ยื่นคำขอ OT
   @Post('requests')
-  createOvertimeRequest(@Body() dto: CreateOvertimeRequestDto) {
-    return this.overtimeModuleService.createOvertimeRequest(dto);
+  createOvertimeRequest(
+    @Body() dto: CreateOvertimeRequestDto,
+    @Req() req: any,
+  ) {
+    return this.overtimeModuleService.createOvertimeRequest(dto, req.user);
   }
 
   // 2) ประวัติ OT ของตัวเอง
   @Get('requests')
-  getrequestOvertime() {
-    return this.overtimeModuleService.getrequestOvertime();
+  getrequestOvertime(@Req() req: any) {
+    return this.overtimeModuleService.getrequestOvertime(req.user);
   }
 
   // 3) ดู OT รายการเดียว
   @Get('requests/:id')
-  getOvertimeById(@Param('id') id: string) {
+  getOvertimeById(@Param('id') id: number) {
     return this.overtimeModuleService.getOvertimeById(id);
   }
 
   // 4) หัวหน้าดู OT ของทีมตัวเอง
   @Get('team-requests')
-  getTeamRequests() {
-    return this.overtimeModuleService.getTeamRequests();
+  getTeamRequests(@Req() req: any) {
+    return this.overtimeModuleService.getTeamRequests(req.user.teamId);
   }
 
   // 5) อนุมัติ / ปฏิเสธ OT
   @Put('requests/:id/status')
   updateOvertimeStatus(
-    @Param('id') id: string,
+    @Param('id') id: number,
     @Body() dto: UpdateOvertimeStatusDto,
   ) {
     return this.overtimeModuleService.updateOvertimeStatus(id, dto);
   }
-  
 }

@@ -11,7 +11,9 @@ describe('AttendanceModuleController', () => {
       providers: [AttendanceModuleService],
     }).compile();
 
-    controller = module.get<AttendanceModuleController>(AttendanceModuleController);
+    controller = module.get<AttendanceModuleController>(
+      AttendanceModuleController,
+    );
   });
 
   it('should be defined', () => {

@@ -1,9 +1,17 @@
-import { IsNotEmpty, IsString, IsDateString, IsOptional, IsNumber, IsEnum, IsInt } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsDateString,
+  IsOptional,
+  IsNumber,
+  IsEnum,
+  IsInt,
+} from 'class-validator';
 
 export class CreateOvertimeRequestDto {
   @IsString()
   @IsNotEmpty()
-  id: string;   // empId
+  id: string; // empId
 
   @IsNumber()
   @IsNotEmpty()

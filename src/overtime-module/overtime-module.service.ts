@@ -1,50 +1,28 @@
 import { Injectable } from '@nestjs/common';
-import {CreateOvertimeRequestDto,UpdateOvertimeStatusDto} from './dto/dto';
-import { PrismaService } from '../database/prisma.service';
+import { CreateOvertimeRequestDto, UpdateOvertimeStatusDto } from './dto/dto';
+import { OtService } from './overtime-function.service';
 
 @Injectable()
 export class OvertimeModuleService {
-    updateOvertimeStatus(id: string, dto: UpdateOvertimeStatusDto) {
-      throw new Error('Method not implemented.');
-    }
-    getTeamRequests() {
-      return "This action returns all overtime requests";
-    }
+  constructor(private otService: OtService) {}
 
-    createOvertimeRequest(dto: CreateOvertimeRequestDto) {
-        const otService = new OtService(new PrismaService());
-        return otService.createOtRequest(dto);
-    }
-
-    getrequestOvertime() {
-        return "This action returns all overtime requests";
-    }
-
-    getOvertimeById(id: string) {
-        const otService = new OtService(new PrismaService());
-        return otService.getOtRequestsByEmpId(id);
-    }
-}
-
-class OtService {
-  constructor(private prisma: PrismaService) {}
-
-  async createOtRequest(dto: CreateOvertimeRequestDto) {
-    const now = new Date();
-
-    return await this.prisma.oT.create({
-      data: {
-        empId: dto.id,
-        otTime: dto.time,
-        createDate: now,
-        updateDate: now,
-      },
-    });
+  updateOvertimeStatus(otId: number, dto: UpdateOvertimeStatusDto) {
+    return this.otService.updateOvertimeStatus(otId, dto);
+  }
+  getTeamRequests(teamId: number) {
+    return this.otService.getOtRequestsTeam(teamId);
   }
 
-  async getOtRequestsByEmpId(empId: string) {
-    return await this.prisma.oT.findMany({
-      where: { empId },
-    });
+  async createOvertimeRequest(dto: CreateOvertimeRequestDto, user: any) {
+    // user มาจาก token ที่ AuthGuard decode ไว้แล้ว
+    return this.otService.createOtRequest(dto, user.empId);
+  }
+
+  getrequestOvertime(user: any) {
+    return this.otService.getOtRequestsByEmpId(user.empId);
+  }
+
+  getOvertimeById(otId: number) {
+    return this.otService.getOtRequestsByRequestId(otId);
   }
 }

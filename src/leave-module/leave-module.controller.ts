@@ -1,4 +1,12 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
 import { LeaveModuleService } from './leave-module.service';
 
 @Controller('leave')
@@ -31,9 +39,7 @@ export class LeaveModuleController {
   }
 
   @Put('requests/:id/status')
-  putLeaveRequests(
-    @Param('id') id: string,
-    @Body() dto: any,) {
+  putLeaveRequests(@Param('id') id: string, @Body() dto: any) {
     return this.leaveModuleService.putLeaveRequests(id, dto);
   }
 
@@ -41,5 +47,4 @@ export class LeaveModuleController {
   deleteLeaveRequests(@Param('id') id: string) {
     return this.leaveModuleService.deleteLeaveRequests(id);
   }
-
 }
