@@ -14,6 +14,7 @@ model User {
   password     String   @map("Password")
   name         String   @map("Emp_Name")
   nickName     String?  @map("Nick_Name")
+  cognitoSub   String   @map("Cognito_Sub")
   registNo     String?  @map("Regist_No")
   phoneNumber  String?  @map("Phone_Number")
   email        String?  @map("Email")
