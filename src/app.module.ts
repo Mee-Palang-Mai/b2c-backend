@@ -13,7 +13,7 @@ import { OvertimeModule } from './overtime/overtime.module';
     }),
     DatabaseModule,
     AuthModule,
-    OvertimeModule
+    OvertimeModule,
   ],
   controllers: [AppController],
   providers: [AppService],

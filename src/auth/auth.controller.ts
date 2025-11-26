@@ -27,10 +27,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     try {
-      const auth = await this.authService.login(
-        body.username,
-        body.password,
-      );
+      const auth = await this.authService.login(body.username, body.password);
       const { AccessToken, RefreshToken, IdToken } =
         auth.AuthenticationResult ?? {};
 
