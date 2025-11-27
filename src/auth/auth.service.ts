@@ -146,4 +146,13 @@ export class AuthService {
 
     return this.client.send(command);
   }
+
+  async adminCreateUserWithSub(username: string, email: string) {
+    const result = await this.adminCreateUser(username, email);
+
+    const sub =
+      result.User?.Attributes?.find((a) => a.Name === 'sub')?.Value ?? null;
+
+    return { result, sub };
+  }
 }
