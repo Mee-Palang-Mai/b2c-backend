@@ -1,28 +1,27 @@
 import { Injectable } from '@nestjs/common';
 import { CreateOvertimeRequestDto, UpdateOvertimeStatusDto } from './dto/dto';
-import { OtService } from './overtime-function.service';
 
 @Injectable()
 export class OvertimeService {
-  constructor(private otService: OtService) {}
+  constructor() {}
 
-  updateOvertimeStatus(otId: number, dto: UpdateOvertimeStatusDto) {
-    return this.otService.updateOvertimeStatus(otId, dto);
+  updateOvertimeStatus(requestId: number, dto: UpdateOvertimeStatusDto) {
+    return 'updateOvertimeStatus'; // TODO: Implement this
   }
   getTeamRequests(teamId: number) {
-    return this.otService.getOtRequestsTeam(teamId);
+    return 'getTeamRequests'; // TODO: Implement this
   }
 
-  async createOvertimeRequest(dto: CreateOvertimeRequestDto, user: any) {
+  createOvertimeRequest(dto: CreateOvertimeRequestDto, user: any) {
     // user มาจาก token ที่ AuthGuard decode ไว้แล้ว
-    return this.otService.createOtRequest(dto, user.empId);
+    return 'createOvertimeRequest'; // TODO: Implement this
   }
 
   getrequestOvertime(user: any) {
-    return this.otService.getOtRequestsByEmpId(user.empId);
+    return 'getrequestOvertime'; // TODO: Implement this
   }
 
   getOvertimeById(otId: number) {
-    return this.otService.getOtRequestsByRequestId(otId);
+    return 'getOvertimeById'; // TODO: Implement this
   }
 }
