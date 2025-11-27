@@ -93,9 +93,6 @@ export class AuthService {
     return { message: 'User created' };
   }
 
-  /**
-   * USER_PASSWORD_AUTH login using username + password.
-   */
   login(
     username: string,
     password: string,

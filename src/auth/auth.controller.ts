@@ -21,6 +21,7 @@ import { UserService } from 'src/user/user.service';
 import { AuthCookies } from 'src/types/auth-user.type';
 import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
+import { hashPassword } from 'src/utils/password.util';
 
 @ApiTags('auth')
 @Controller('/auth')
@@ -62,11 +63,13 @@ export class AuthController {
       throw new BadRequestException('Cognito did not return sub');
     }
 
+    const hashed = await hashPassword(password);
+
     const user = await this.userService.createUser({
       empId,
       empNo,
       username,
-      password,
+      password: hashed,
       empName,
       email,
       empLevel,
