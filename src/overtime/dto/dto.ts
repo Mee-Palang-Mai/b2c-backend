@@ -1,17 +1,15 @@
 import {
   IsNotEmpty,
   IsString,
-  IsDateString,
   IsOptional,
   IsNumber,
   IsEnum,
-  IsInt,
 } from 'class-validator';
 
 export class CreateOvertimeRequestDto {
   @IsString()
   @IsNotEmpty()
-  id: string; // empId
+  id: number; // empId
 
   @IsNumber()
   @IsNotEmpty()
@@ -31,4 +29,8 @@ export class UpdateOvertimeStatusDto {
   @IsOptional()
   @IsString()
   managerNote?: string; // หมายเหตุจากหัวหน้า
+
+  @IsOptional()
+  @IsNumber()
+  approvalBy?: number;
 }
