@@ -2,8 +2,7 @@ export class CreateUserDto {
   empId!: number;
   empNo!: string;
   username!: string;
-  password?: string;
-  empName!: string;
+  name!: string;
   nickName?: string;
   phoneNumber?: string;
   email?: string;

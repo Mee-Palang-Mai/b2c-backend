@@ -32,8 +32,7 @@ export class UserService {
         empId: dto.empId,
         empNo: dto.empNo,
         username: dto.username,
-        password: dto.password ?? null,
-        empName: dto.empName,
+        name: dto.name,
         nickName: dto.nickName ?? null,
         phoneNumber: dto.phoneNumber ?? null,
         email: dto.email ?? null,
@@ -49,31 +48,41 @@ export class UserService {
   }
 
   formatUser(user: unknown): UserResponseDto | null {
-    if (typeof user !== 'object' || user === null) return null;
-
-    const u = user as Record<string, unknown>;
-
     if (
-      typeof u.empId !== 'number' ||
-      typeof u.empNo !== 'string' ||
-      typeof u.username !== 'string' ||
-      typeof u.empName !== 'string' ||
-      typeof u.cognitoSub !== 'string'
+      typeof user !== 'object' ||
+      user === null ||
+      !('empId' in user) ||
+      !('empNo' in user) ||
+      !('username' in user) ||
+      !('name' in user) ||
+      !('cognitoSub' in user)
     ) {
       return null;
     }
+
+    const u = user as {
+      empId: number;
+      empNo: string;
+      username: string;
+      name: string;
+      nickName?: string | null;
+      email?: string | null;
+      phoneNumber?: string | null;
+      teamId?: string | null;
+      empLevel?: string | null;
+      cognitoSub: string;
+    };
 
     return {
       empId: u.empId,
       empNo: u.empNo,
       username: u.username,
-      name: u.empName,
-      nickName: typeof u.nickName === 'string' ? u.nickName : undefined,
-      email: typeof u.email === 'string' ? u.email : undefined,
-      phoneNumber:
-        typeof u.phoneNumber === 'string' ? u.phoneNumber : undefined,
-      teamId: typeof u.teamId === 'string' ? u.teamId : undefined,
-      role: typeof u.empLevel === 'string' ? u.empLevel : undefined,
+      name: u.name,
+      nickName: u.nickName ?? undefined,
+      email: u.email ?? undefined,
+      phoneNumber: u.phoneNumber ?? undefined,
+      teamId: u.teamId ?? undefined,
+      role: u.empLevel ?? undefined,
       cognitoSub: u.cognitoSub,
     };
   }

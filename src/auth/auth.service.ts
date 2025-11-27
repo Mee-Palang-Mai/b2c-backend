@@ -1,155 +1,217 @@
 import {
-  AuthFlowType,
-  AdminCreateUserCommand,
-  AdminCreateUserCommandOutput,
-  AdminSetUserPasswordCommand,
-  AdminSetUserPasswordCommandOutput,
-  CognitoIdentityProviderClient,
-  InitiateAuthCommand,
-  InitiateAuthCommandOutput,
-} from '@aws-sdk/client-cognito-identity-provider';
-import { Injectable } from '@nestjs/common';
-import * as crypto from 'crypto';
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+import type { Response } from 'express';
 
-function requireEnv(name: string): string {
-  const value = process.env[name];
-  if (!value) {
-    throw new Error(`Missing required environment variable: ${name}`);
+import { CognitoService } from './cognito.service';
+import { UserService } from 'src/user/user.service';
+import { SignupDto } from './dto/signup.dto';
+import { LoginDto } from './dto/login.dto';
+import { AuthCookies } from 'src/types/auth-user.type';
+import * as jwt from 'jsonwebtoken';
+
+function decodeUsernameFromIdToken(idToken: string): string {
+  const decoded = jwt.decode(idToken) as { [k: string]: unknown } | null;
+
+  if (!decoded || typeof decoded !== 'object') {
+    throw new Error('Invalid id_token');
   }
-  return value;
+
+  const username = decoded['cognito:username'];
+
+  if (typeof username !== 'string') {
+    throw new Error('cognito:username missing in token');
+  }
+
+  return username;
 }
 
 @Injectable()
 export class AuthService {
-  private readonly client: CognitoIdentityProviderClient;
-  private readonly region: string;
-  private readonly userPoolId: string;
-  private readonly clientId: string;
-  private readonly clientSecret?: string;
+  constructor(
+    private readonly cognito: CognitoService,
+    private readonly userService: UserService,
+  ) {}
 
-  constructor() {
-    this.region = requireEnv('AWS_REGION');
-    this.userPoolId = requireEnv('COGNITO_USER_POOL_ID');
-    this.clientId = requireEnv('COGNITO_CLIENT_ID');
-    this.clientSecret = process.env.COGNITO_CLIENT_SECRET || undefined;
+  private readonly cookieOptions = {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'strict' as const,
+    path: '/',
+  };
 
-    const hasExplicitCreds =
-      !!process.env.AWS_ACCESS_KEY_ID && !!process.env.AWS_SECRET_ACCESS_KEY;
+  async signup(dto: SignupDto) {
+    try {
+      const { username, password, email } = dto;
 
-    this.client = new CognitoIdentityProviderClient({
-      region: this.region,
-      ...(hasExplicitCreds && {
-        credentials: {
-          accessKeyId: requireEnv('AWS_ACCESS_KEY_ID'),
-          secretAccessKey: requireEnv('AWS_SECRET_ACCESS_KEY'),
-        },
-      }),
-    });
-  }
+      const { sub } = await this.cognito.adminCreateUserWithSub(
+        username,
+        email ?? '',
+      );
 
-  private getSecretHash(username: string): string | undefined {
-    if (!this.clientSecret) return undefined;
-
-    const hmac = crypto.createHmac('SHA256', this.clientSecret);
-    hmac.update(username + this.clientId);
-    return hmac.digest('base64');
-  }
-
-  adminCreateUser(
-    username: string,
-    email: string,
-  ): Promise<AdminCreateUserCommandOutput> {
-    const command = new AdminCreateUserCommand({
-      UserPoolId: this.userPoolId,
-      Username: username,
-      UserAttributes: [{ Name: 'email', Value: email }],
-      MessageAction: 'SUPPRESS',
-    });
-
-    return this.client.send(command);
-  }
-
-  setPassword(
-    username: string,
-    password: string,
-  ): Promise<AdminSetUserPasswordCommandOutput> {
-    const command = new AdminSetUserPasswordCommand({
-      UserPoolId: this.userPoolId,
-      Username: username,
-      Password: password,
-      Permanent: true,
-    });
-
-    return this.client.send(command);
-  }
-
-  async signupAdmin(
-    username: string,
-    email: string,
-    password: string,
-  ): Promise<{ message: string }> {
-    await this.adminCreateUser(username, email);
-    await this.setPassword(username, password);
-    return { message: 'User created' };
-  }
-
-  login(
-    username: string,
-    password: string,
-  ): Promise<InitiateAuthCommandOutput> {
-    const authParameters: Record<string, string> = {
-      USERNAME: username,
-      PASSWORD: password,
-    };
-
-    const secretHash = this.getSecretHash(username);
-    if (secretHash) {
-      authParameters.SECRET_HASH = secretHash;
-    }
-
-    const command = new InitiateAuthCommand({
-      AuthFlow: AuthFlowType.USER_PASSWORD_AUTH,
-      ClientId: this.clientId,
-      AuthParameters: authParameters,
-    });
-
-    return this.client.send(command);
-  }
-
-  refresh(
-    refreshToken: string,
-    cognitoUsernameForHash?: string,
-  ): Promise<InitiateAuthCommandOutput> {
-    const authParameters: Record<string, string> = {
-      REFRESH_TOKEN: refreshToken,
-    };
-
-    if (this.clientSecret) {
-      if (!cognitoUsernameForHash) {
-        throw new Error(
-          'cognitoUsernameForHash is required for refresh when COGNITO_CLIENT_SECRET is set. Pass the internal Cognito username (cognito:username / sub).',
-        );
+      if (!sub) {
+        throw new BadRequestException('Cognito did not return user id');
       }
 
-      const secretHash = this.getSecretHash(cognitoUsernameForHash);
-      authParameters.SECRET_HASH = secretHash!;
+      await this.cognito.setPassword(username, password);
+
+      const user = await this.userService.createUser({
+        ...dto,
+        cognitoSub: sub,
+      });
+
+      return {
+        message: 'User created & bound with Cognito',
+        user: this.userService.formatUser(user),
+      };
+    } catch (err) {
+      this.throwAuthError(err);
     }
-
-    const command = new InitiateAuthCommand({
-      AuthFlow: AuthFlowType.REFRESH_TOKEN_AUTH,
-      ClientId: this.clientId,
-      AuthParameters: authParameters,
-    });
-
-    return this.client.send(command);
   }
 
-  async adminCreateUserWithSub(username: string, email: string) {
-    const result = await this.adminCreateUser(username, email);
+  async login(dto: LoginDto) {
+    try {
+      const { username, password } = dto;
 
-    const sub =
-      result.User?.Attributes?.find((a) => a.Name === 'sub')?.Value ?? null;
+      const user = await this.userService.findByUsername(username);
+      if (!user) throw new BadRequestException('User not found');
 
-    return { result, sub };
+      const loginUsername = user.email ?? user.username;
+
+      if (!user.cognitoSub) {
+        const { sub } = await this.cognito.adminCreateUserWithSub(
+          loginUsername,
+          loginUsername,
+        );
+
+        if (!sub) throw new BadRequestException('Cognito bind failed');
+
+        await this.cognito.setPassword(loginUsername, password);
+        await this.userService.updateCognitoSub(loginUsername, sub);
+
+        user.cognitoSub = sub;
+      }
+
+      const auth = await this.cognito.login(loginUsername, password);
+      const result = auth.AuthenticationResult;
+
+      if (!result?.AccessToken || !result?.RefreshToken || !result?.IdToken) {
+        throw new UnauthorizedException('Cognito authentication failed');
+      }
+
+      return {
+        cookies: {
+          access_token: result.AccessToken,
+          refresh_token: result.RefreshToken,
+          id_token: result.IdToken,
+        } satisfies AuthCookies,
+
+        user: {
+          empNo: user.empNo,
+          username: user.username,
+          name: user.name,
+          role: user.empLevel,
+          cognitoSub: user.cognitoSub,
+        },
+      };
+    } catch (err) {
+      this.throwAuthError(err);
+    }
+  }
+
+  async refresh(refreshToken?: string, idToken?: string) {
+    try {
+      if (!refreshToken) {
+        throw new UnauthorizedException('Refresh token missing');
+      }
+
+      if (!idToken) {
+        throw new UnauthorizedException('id_token missing');
+      }
+
+      const cognitoUsername = decodeUsernameFromIdToken(idToken);
+
+      const auth = await this.cognito.refresh(refreshToken, cognitoUsername);
+      const result = auth.AuthenticationResult;
+
+      if (!result?.AccessToken || !result?.IdToken) {
+        throw new UnauthorizedException('Invalid refresh token');
+      }
+
+      return {
+        cookies: {
+          access_token: result.AccessToken,
+          id_token: result.IdToken,
+        },
+      };
+    } catch (err) {
+      this.throwAuthError(err);
+    }
+  }
+
+  setAuthCookies(res: Response, cookies: Partial<AuthCookies>) {
+    if (cookies.access_token) {
+      res.cookie('access_token', cookies.access_token, {
+        ...this.cookieOptions,
+        maxAge: 3600_000,
+      });
+    }
+
+    if (cookies.refresh_token) {
+      res.cookie('refresh_token', cookies.refresh_token, {
+        ...this.cookieOptions,
+        maxAge: 7 * 86400_000,
+      });
+    }
+
+    if (cookies.id_token) {
+      res.cookie('id_token', cookies.id_token, {
+        ...this.cookieOptions,
+        maxAge: 3600_000,
+      });
+    }
+  }
+
+  clearAuthCookies(res: Response) {
+    res.clearCookie('access_token', { path: '/' });
+    res.clearCookie('refresh_token', { path: '/' });
+    res.clearCookie('id_token', { path: '/' });
+  }
+
+  private throwAuthError(err: unknown): never {
+    const message =
+      err instanceof Error ? err.message : 'Authentication failed';
+
+    if (message.includes('Unique constraint failed')) {
+      if (message.includes('Emp_ID')) {
+        throw new BadRequestException('Employee ID already exists');
+      }
+
+      if (message.includes('username')) {
+        throw new BadRequestException('Username already exists');
+      }
+
+      throw new BadRequestException('Duplicate value exists');
+    }
+
+    if (message.includes('InvalidParameterException')) {
+      throw new BadRequestException(message.replace(/^.*?:\s*/, ''));
+    }
+
+    if (message.includes('NotAuthorizedException')) {
+      throw new UnauthorizedException('Invalid username or password');
+    }
+
+    if (message.includes('UsernameExistsException')) {
+      throw new BadRequestException('Email already exists in Cognito');
+    }
+
+    if (message.includes('UserNotFoundException')) {
+      throw new BadRequestException('User not found in Cognito');
+    }
+
+    throw new BadRequestException(message);
   }
 }
