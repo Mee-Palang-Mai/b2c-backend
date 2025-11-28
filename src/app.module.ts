@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
 import { OvertimeModule } from './overtime/overtime.module';
+import { UserModule } from './user/user.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -14,6 +15,7 @@ import { OvertimeModule } from './overtime/overtime.module';
     DatabaseModule,
     AuthModule,
     OvertimeModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],
