@@ -1,82 +1,58 @@
-import {
-  BadRequestException,
-  Body,
-  Controller,
-  Post,
-  Res,
-} from '@nestjs/common';
-import type { Response } from 'express';
-import { AuthService } from './auth.service';
+import { Body, Controller, Post, Req, Res } from '@nestjs/common';
+import type { Request, Response } from 'express';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 
+import { AuthService } from './auth.service';
+import { SignupDto } from './dto/signup.dto';
+import { LoginDto } from './dto/login.dto';
+import { AuthCookies } from 'src/types/auth-user.type';
+
+@ApiTags('auth')
 @Controller('/auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private readonly authService: AuthService) {}
 
   @Post('signup')
-  async signup(
-    @Body() body: { username: string; email: string; password: string },
-  ) {
-    await this.authService.adminCreateUser(body.username, body.email);
-    await this.authService.setPassword(body.username, body.password);
-    return { message: 'User created' };
+  @ApiOperation({ summary: 'Register user & bind Cognito' })
+  @ApiBody({ type: SignupDto })
+  @ApiResponse({ status: 201 })
+  async signup(@Body() body: SignupDto) {
+    return this.authService.signup(body);
   }
 
   @Post('login')
+  @ApiOperation({ summary: 'Login with Cognito (creates cookies)' })
+  @ApiBody({ type: LoginDto })
   async login(
-    @Body() body: { username: string; password: string },
+    @Body() body: LoginDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    try {
-      const auth = await this.authService.login(body.username, body.password);
-      const { AccessToken, RefreshToken, IdToken } =
-        auth.AuthenticationResult ?? {};
+    const { cookies, user } = await this.authService.login(body);
+    this.authService.setAuthCookies(res, cookies);
 
-      const cookieOptions = {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'strict' as const,
-        path: '/',
-      };
-
-      res.cookie('access_token', AccessToken, {
-        ...cookieOptions,
-        maxAge: 3600_000,
-      });
-
-      res.cookie('refresh_token', RefreshToken, {
-        ...cookieOptions,
-        maxAge: 7 * 24 * 3600_000,
-      });
-
-      res.cookie('id_token', IdToken, {
-        ...cookieOptions,
-        maxAge: 3600_000,
-      });
-
-      return { message: 'Logged in' };
-    } catch (err: unknown) {
-      const e = err as Record<string, unknown>;
-
-      const message =
-        typeof e.message === 'string' ? e.message : 'Unknown error';
-
-      const code = typeof e.code === 'string' ? e.code : undefined;
-
-      throw new BadRequestException({ message, code });
-    }
+    return { message: 'Logged in successfully', user };
   }
 
   @Post('refresh')
-  refresh(
-    @Body()
-    body: {
-      refreshToken: string;
-      cognitoUsernameForHash?: string;
-    },
+  async refresh(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    return this.authService.refresh(
-      body.refreshToken,
-      body.cognitoUsernameForHash,
-    );
+    const cookies = req.cookies as AuthCookies;
+
+    const refreshToken = cookies.refresh_token;
+    const idToken = cookies.id_token;
+
+    const result = await this.authService.refresh(refreshToken, idToken);
+    this.authService.setAuthCookies(res, result.cookies);
+
+    return { message: 'Token refreshed' };
+  }
+
+  @Post('logout')
+  @ApiOperation({ summary: 'Logout' })
+  logout(@Res({ passthrough: true }) res: Response) {
+    this.authService.clearAuthCookies(res);
+    return { message: 'Logged out' };
   }
 }

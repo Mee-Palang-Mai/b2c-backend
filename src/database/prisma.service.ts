@@ -30,7 +30,6 @@ export class PrismaService
       await this.$connect();
       this.logger.log('Successfully connected to database');
 
-      // Enable query logging in development
       if (process.env.NODE_ENV === 'development') {
         this.$on('query' as never, (e: never) => {
           const event = e as { query: string; duration: number };
