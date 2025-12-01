@@ -7,228 +7,299 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+//
+// ========================= USER =========================
+//
 model User {
-  empId       Int      @id @map("Emp_ID")
-  empNo       String   @map("Emp_No")
-  username    String   @map("Username")
-  password    String   @map("Password")
-  name        String   @map("Emp_Name")
-  nickName    String?  @map("Nick_Name")
-  cognitoSub  String   @map("Cognito_Sub")
-  registNo    String?  @map("Regist_No")
-  phoneNumber String?  @map("Phone_Number")
-  email       String?  @map("Email")
-  empLevel    String?  @map("Emp_Level")
-  teamId      String?  @map("Team_Id")
-  workStart   DateTime @map("Work_Start_Date")
-  workStatus  String   @map("Work_Status")
-  createDate  DateTime @map("Create_Date")
-  updateDate  DateTime @map("Update_Date")
+  empId       Int      @id @map("emp_id")
+  empNo       String   @map("emp_no")
+  username    String   @map("username")
+  password    String?  @map("password")
+  name        String   @map("emp_name")
+  nickName    String?  @map("nick_name")
+  cognitoSub  String   @map("cognito_sub")
+  registNo    String?  @map("regist_no")
+  phoneNumber String?  @map("phone_number")
+  email       String?  @map("email")
+  empLevel    String?  @map("emp_level")
+  teamId      Int?     @map("team_id")
+  workStart   DateTime @map("work_start_date")
+  workStatus  String   @map("work_status")
+  createAt    DateTime @map("created_at")
+  updateAt    DateTime @map("updated_at")
+  deletedAt   DateTime @map("deleted_at")
+
+  team             Team?              @relation(fields: [teamId], references: [teamId])
+  loginout         Loginout?
+  attendences      Attendence[]
+  extraPayRequests ExtraPayRequest[]
+  deductRequests   DeductRequest[]
+  payrolls         Payroll[]
+  leaveBalances    LeaveBalance[]
+  leaveRequests    LeaveRequest[]
 
   @@map("User")
 }
 
-model Holiday {
-  holidayId   Int      @id @map("Holiday_ID")
-  holidayDate DateTime @map("Holiday_Date")
-  createDate  DateTime @map("Create_Date")
-  updateDate  DateTime @map("Update_Date")
-  approveBy   String?  @map("Approve_By")
+//
+// ========================= TEAM =========================
+//
+model Team {
+  teamId    Int      @id @map("team_id")
+  name      String   @map("name")
+  createAt  DateTime @map("created_at")
+  updateAt  DateTime @map("updated_at")
+  deletedAt DateTime @map("deleted_at")
 
-  @@map("Holiday")
+  users User[]
+
+  @@map("Team")
 }
 
+//
+// ========================= LOGINOUT =========================
+//
 model Loginout {
-  transactionId Int      @id @map("Transaction_ID")
-  empId         Int      @map("Emp_ID")
-  status        String   @map("Status")
-  timestamp     DateTime @map("Timestamp")
+  transactionId Int      @id @map("transaction_id")
+  empId         Int      @unique @map("emp_id")
+  status        String   @map("status")
+  timestamp     DateTime @map("timestamp")
+
+  user User @relation(fields: [empId], references: [empId])
 
   @@map("Loginout")
 }
 
-model CheckIn {
-  checkinTransactionId Int      @id @map("Checkin_Transaction_ID")
-  empId                Int      @map("Emp_ID")
-  storeId              Int      @map("Store_ID")
-  latitude             Float    @map("Latitude")
-  longitude            Float    @map("Longitude")
-  status               String   @map("Status")
-  timestamp            DateTime @map("Timestamp")
-  createDate           DateTime @map("Create_Date")
-  updateDate           DateTime @map("Update_Date")
-  startWorkingTime     String?  @map("Start_Working_Time")
+//
+// ========================= ATTENDENCE =========================
+//
+model Attendence {
+  attendenceId Int      @id @map("attendence_id")
+  empId        Int      @map("emp_id")
+  storeId      Int      @map("store_id")
+  checkInLatitude  Float    @map("check_in_latitude")
+  checkInlongitude Float    @map("check_in_longitude")
+  checkInDatetime  DateTime @map("check_in_datetime")
+  checkOutlatitude Float    @map("check_out_latitude")
+  checkOutlongitude Float   @map("check_out_longitude")
+  checkOutDatetime DateTime @map("check_out_datetime")
+  status           String   @map("status")
+  isOt             String   @map("is_ot")
+  createAt         DateTime @map("created_at")
+  updateAt         DateTime @map("updated_at")
+  deletedAt        DateTime @map("deleted_at")
 
-  @@map("Check-in")
+  user User   @relation(fields: [empId], references: [empId])
+  store Store @relation(fields: [storeId], references: [storeId])
+
+  ot         OT[]
+  otRequests OTRequest[]
+
+  @@map("Attendence")
 }
 
-model CheckOut {
-  checkoutTransactionId Int      @id @map("Checkout_Transaction_ID")
-  checkinTransactionId  Int      @map("Checkin_Transaction_ID")
-  empId                 Int      @map("Emp_ID")
-  storeId               Int      @map("Store_ID")
-  latitude              Float    @map("Latitude")
-  longitude             Float    @map("Longitude")
-  status                String   @map("Status")
-  timestamp             DateTime @map("Timestamp")
-  createDate            DateTime @map("Create_Date")
-  updateDate            DateTime @map("Update_Date")
-  endWorkingTime        String?  @map("End_Working_Time")
-  isOt                  Boolean? @map("Is_OT")
-
-  @@map("Check-out")
-}
-
+//
+// ========================= OT =========================
+//
 model OT {
-  otId       Int      @id @default(autoincrement()) @map("OT_ID")
-  empId      String?  @map("Emp_ID")
-  otTime     Int      @map("OT_Time")
-  createDate DateTime @map("Create_Date")
-  updateDate DateTime @map("Update_Date")
+  otId          Int      @id @default(autoincrement()) @map("ot_id")
+  attendenceId  Int      @map("attendence_id")
+  startDateTime DateTime @map("start_datetime")
+  endDateTime   DateTime @map("end_datetime")
+
+  attendence Attendence @relation(fields: [attendenceId], references: [attendenceId])
 
   @@map("OT")
 }
 
+//
+// ========================= OT REQUEST =========================
+//
+model OTRequest {
+  requestId     Int      @id @default(autoincrement()) @map("request_id")
+  attendenceId  Int      @map("attendence_id")
+  status        String   @map("status")
+  note          String   @map("note")
+  approvalBy    String?  @map("approval_by")
+  createAt      DateTime @map("created_at")
+  updateAt      DateTime @map("updated_at")
+  deletedAt     DateTime @map("deleted_at")
+
+  attendence Attendence @relation(fields: [attendenceId], references: [attendenceId])
+
+  @@map("OT Request")
+}
+
+//
+// ========================= STORE =========================
+//
 model Store {
-  storeId    Int      @id @map("Store_ID")
-  storeName  String   @map("Store_Name")
-  storeType  String   @map("Store_Type")
-  latitude   Float    @map("Latitude")
-  longitude  Float    @map("Longitude")
-  createDate DateTime @map("Create_Date")
-  updateDate DateTime @map("Update_Date")
+  storeId    Int      @id @map("store_id")
+  storeName  String   @map("store_name")
+  storeType  String   @map("store_type")
+  latitude   Float    @map("latitude")
+  longitude  Float    @map("longitude")
+  createAt   DateTime @map("created_at")
+  updateAt   DateTime @map("updated_at")
+  deletedAt  DateTime @map("deleted_at")
+
+  attendences Attendence[]
 
   @@map("Store")
 }
 
-model Task {
-  taskId    Int      @id @map("Task_ID")
-  empId     Int      @map("Emp_ID")
-  routeNo   Int?     @map("Route_No")
-  zoneNo    Int?     @map("Zone_No")
-  storeNo   Int?     @map("Store_No")
-  date      DateTime @map("Date")
-  startTime DateTime @map("Start_Time")
-  endTime   DateTime @map("End_Time")
-  status    String   @map("Status")
-
-  @@map("Task")
-}
-
+//
+// ========================= PAYROLL =========================
+//
 model Payroll {
-  payrollId    Int      @id @map("Payroll_ID")
-  empId        Int      @map("Emp_ID")
-  salary       Float?   @map("Salary")
-  incentivePay Float?   @map("Incentive_Pay")
-  extraTotal   Float?   @map("Extra_Total")
-  deductTotal  Float?   @map("Deduct_Total")
-  totalPay     Float?   @map("Total_Pay")
-  createDate   DateTime @map("Create_Date")
-  updateDate   DateTime @map("Update_Date")
+  payrollId    Int      @id @map("payroll_id")
+  empId        Int      @map("emp_id")
+  salary       Float?   @map("salary")
+  incentivePay Float?   @map("incentive_pay")
+  extraTotal   Float?   @map("extra_total")
+  deductTotal  Float?   @map("deduct_total")
+  totalPay     Float?   @map("total_pay")
+  payrollDate  DateTime @map("payroll_date")
+  createDate   DateTime @map("create_Date")
+  updateDate   DateTime @map("update_Date")
+
+  user User @relation(fields: [empId], references: [empId])
 
   @@map("Payroll")
 }
 
-model ExtraPay {
-  empId       Int      @id @map("Emp_ID")
-  extraTypeId Int      @map("Extra_Type_ID")
-  amount      Float?   @map("Extra_Pay")
-  createDate  DateTime @map("Create_Date")
-  updateDate  DateTime @map("Update_Date")
-
-  @@map("Extra pay")
-}
-
+//
+// ========================= EXTRA PAY =========================
+//
 model ExtraPayRequest {
-  requestId   Int      @id @map("Request_ID")
-  empId       Int      @map("Emp_ID")
-  extraTypeId Int      @map("Extra_Type_ID")
-  status      String   @map("Status")
-  note        String   @map("Note")
-  approveBy   String?  @map("Approve_By")
-  startDate   DateTime @map("Start_Date")
-  endDate     DateTime @map("End_Date")
-  startTime   DateTime @map("Start_Time")
-  endTime     DateTime @map("End_Time")
-  createDate  DateTime @map("Create_Date")
-  updateDate  DateTime @map("Update_Date")
+  requestId     Int      @id @map("request_id")
+  empId         Int      @map("emp_id")
+  extraTypeId   Int      @map("extra_type_id")
+  status        String   @map("status")
+  note          String   @map("note")
+  approvalBy    String?  @map("approval_by")
+  startDateTime DateTime @map("start_datetime")
+  endDateTime   DateTime @map("end_datetime")
+  createAt      DateTime @map("created_at")
+  updateAt      DateTime @map("updated_at")
+  deletedAt     DateTime @map("deleted_at")
+
+  user        User        @relation(fields: [empId], references: [empId])
+  extraPayType ExtraPayType @relation(fields: [extraTypeId], references: [extraTypeId])
+  totals      ExtraPayTotal[]
 
   @@map("Extra pay Request")
 }
 
+model ExtraPayTotal {
+  id        Int      @id @default(autoincrement())
+  requestId Int      @map("request_id")
+  amount    Float?   @map("extra_pay")
+  createAt  DateTime @map("created_at")
+  updateAt  DateTime @map("updated_at")
+
+  request ExtraPayRequest @relation(fields: [requestId], references: [requestId])
+
+  @@map("Extra pay Total")
+}
+
 model ExtraPayType {
-  extraTypeId Int     @id @map("Extra_Type_ID")
-  typeName    String  @map("Type_Name")
-  payRate     String? @map("Pay_Rate")
-  rateType    String? @map("Rate_Type")
+  extraTypeId Int     @id @map("extra_type_id")
+  typeName    String  @map("type_name")
+  payRate     String? @map("pay_rate")
+  rateType    String? @map("rate_type")
+
+  requests ExtraPayRequest[]
 
   @@map("Extra pay Type")
 }
 
+//
+// ========================= DEDUCT =========================
+//
 model DeductRequest {
-  requestId    Int      @id @map("Request_ID")
-  empId        Int      @map("Emp_ID")
-  deductTypeId Int      @map("Deduct_Type_ID")
-  status       String   @map("Status")
-  note         String   @map("Note")
-  approveBy    String?  @map("Approve_By")
-  createDate   DateTime @map("Create_Date")
-  updateDate   DateTime @map("Update_Date")
+  requestId    Int      @id @map("request_id")
+  empId        Int      @map("emp_id")
+  deductTypeId Int      @map("deduct_type_id")
+  status       String   @map("status")
+  note         String   @map("note")
+  approvalBy   String?  @map("approval_by")
+  createAt     DateTime @map("created_at")
+  updateAt     DateTime @map("updated_at")
+  deletedAt    DateTime @map("deleted_At")
+
+  user       User       @relation(fields: [empId], references: [empId])
+  deductType DeductType @relation(fields: [deductTypeId], references: [deductTypeId])
+  totals     DeductTotal[]
 
   @@map("Deduct Request")
 }
 
 model DeductTotal {
-  empId        Int      @id @map("Emp_ID")
-  deductTypeId Int      @map("Deduct_Type_ID")
-  amount       Float?   @map("Deduct_Total")
-  createDate   DateTime @map("Create_Date")
-  updateDate   DateTime @map("Update_Date")
+  id        Int      @id @default(autoincrement())
+  requestId Int      @map("request_id")
+  amount    Float?   @map("deduct_total")
+  createAt  DateTime @map("created_at")
+  updateAt  DateTime @map("updated_at")
+
+  request DeductRequest @relation(fields: [requestId], references: [requestId])
 
   @@map("Deduct Total")
 }
 
 model DeductType {
-  deductTypeId Int     @id @map("Deduct_Type_ID")
-  typeName     String  @map("Type_Name")
-  deductRate   Float?  @map("Deduct_Rate")
-  rateType     String? @map("Rate_Type")
+  deductTypeId Int     @id @map("deduct_type_id")
+  typeName     String  @map("type_name")
+  deductRate   Float?  @map("deduct_rate")
+  rateType     String? @map("rate_type")
+
+  requests DeductRequest[]
 
   @@map("Deduct Type")
 }
 
+//
+// ========================= LEAVE =========================
+//
 model LeaveType {
-  leaveTypeId Int    @id @map("Leave_Type_ID")
-  typeName    String @map("Type_Name")
+  leaveTypeId Int      @id @map("leave_type_id")
+  typeName    String   @map("type_name")
+
+  leaveRequests LeaveRequest[]
+  leaveBalances LeaveBalance[]
 
   @@map("Leave Type")
 }
 
 model LeaveBalance {
-  empId        Int  @map("Emp_ID")
-  leaveTypeId  Int  @map("Leave_Type_ID")
-  leaveCount   Int? @map("Leave_Count")
-  leaveBalance Int? @map("Leave_Balance")
+  empId       Int  @map("emp_id")
+  leaveTypeId Int  @map("leave_type_id")
+  leaveCount  Int? @map("leave_count")
+  leaveBalance Int? @map("leave_balance")
+
+  leaveType LeaveType @relation(fields: [leaveTypeId], references: [leaveTypeId])
+  user      User      @relation(fields: [empId], references: [empId])
 
   @@id([empId, leaveTypeId])
   @@map("Leave Balance")
 }
 
 model LeaveRequest {
-  requestId    Int      @id @map("Request_ID")
-  empId        Int      @map("Emp_ID")
-  leaveTypeId  Int      @map("Leave_Type_ID")
-  status       String   @map("Status")
-  note         String   @map("Note")
-  leaveCount   Int?     @map("Leave_Count")
-  leaveBalance Int?     @map("Leave_Balance")
-  approveBy    String?  @map("Approve_By")
-  startDate    DateTime @map("Start_Date")
-  endDate      DateTime @map("End_Date")
-  startTime    DateTime @map("Start_Time")
-  endTime      DateTime @map("End_Time")
-  createDate   DateTime @map("Create_Date")
-  updateDate   DateTime @map("Update_Date")
+  requestId     Int      @id @map("request_id")
+  empId         Int      @map("emp_id")
+  leaveTypeId   Int      @map("leave_type_id")
+  status        String   @map("status")
+  note          String   @map("note")
+  leaveCount    Int?     @map("leave_count")
+  approvalBy    String?  @map("approval_by")
+  startDateTime DateTime @map("start_datetime")
+  endDateTime   DateTime @map("end_datetime")
+  createAt      DateTime @map("created_at")
+  updateAt      DateTime @map("updated_at")
+  deletedAt     DateTime @map("deleted_at")
+
+  leaveType LeaveType @relation(fields: [leaveTypeId], references: [leaveTypeId])
+  user      User      @relation(fields: [empId], references: [empId])
 
   @@map("Leave Request")
 }
