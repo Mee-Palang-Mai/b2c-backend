@@ -6,6 +6,8 @@ import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
 import { OvertimeModule } from './overtime/overtime.module';
 import { UserModule } from './user/user.module';
+import { AttendanceModule } from './attendance/attendance.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -16,6 +18,7 @@ import { UserModule } from './user/user.module';
     AuthModule,
     OvertimeModule,
     UserModule,
+    AttendanceModule,
   ],
   controllers: [AppController],
   providers: [AppService],
