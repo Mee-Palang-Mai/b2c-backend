@@ -11,7 +11,7 @@ datasource db {
 // ========================= USER =========================
 //
 model User {
-  empId       String      @id @map("emp_id")
+  empId       String      @id @default(uuid()) @map("emp_id")
   empNo       String   @map("emp_no")
   username    String   @map("username")
   password    String?  @map("password")
@@ -25,8 +25,8 @@ model User {
   teamId      String?     @map("team_id")
   workStart   DateTime @map("work_start_date")
   workStatus  String   @map("work_status")
-  createAt    DateTime @map("created_at")
-  updateAt    DateTime @map("updated_at")
+  createAt    DateTime @default(now()) @map("created_at")
+  updateAt    DateTime @updatedAt @map("updated_at")
   deletedAt   DateTime? @map("deleted_at")
 
   team             Team?              @relation(fields: [teamId], references: [teamId])
@@ -45,10 +45,10 @@ model User {
 // ========================= TEAM =========================
 //
 model Team {
-  teamId    String      @id @map("team_id")
+  teamId    String      @id @default(uuid()) @map("team_id")
   name      String   @map("name")
-  createAt  DateTime @map("created_at")
-  updateAt  DateTime @map("updated_at")
+  createAt  DateTime @default(now()) @map("created_at")
+  updateAt  DateTime @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
 
   users User[]
@@ -74,7 +74,7 @@ model Loginout {
 // ========================= ATTENDENCE =========================
 //
 model Attendence {
-  attendenceId       String   @id @map("attendence_id")
+  attendenceId       String   @id @default(uuid()) @map("attendence_id")
   empId        String   @map("emp_id")
   placeId      String   @map("place_id")
   checkInLatitude  Float    @map("check_in_latitude")
@@ -296,7 +296,7 @@ model LeaveRequest {
   endDateTime   DateTime @map("end_datetime")
   createAt      DateTime @map("created_at")
   updateAt      DateTime @map("updated_at")
-  deletedAt     DateTime? @map("deleted_at")
+  deletedAt     DateTime @map("deleted_at")
 
   leaveType LeaveType @relation(fields: [leaveTypeId], references: [leaveTypeId])
   user      User      @relation(fields: [empId], references: [empId])
