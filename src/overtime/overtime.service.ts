@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException, Logger } from '@nestjs/common';
 import { CreateOvertimeRequestDto, GetOvertimeRequestDto, UpdateOvertimeStatusDto } from './dto/dto';
 import { PrismaService } from '../database/prisma.service';
 
@@ -7,6 +7,8 @@ export class OvertimeService {
   constructor(private prisma: PrismaService) {}
 
   async updateOvertimeStatus(requestId: number, dto: UpdateOvertimeStatusDto) {
+
+    Logger.log(`Updating OT request ${requestId} with status ${dto.status}`);
 
     const result = await this.prisma.oTRequest.update({
       where: { requestId },
@@ -17,53 +19,73 @@ export class OvertimeService {
       },
     });
 
+    Logger.log(`OT request ${requestId} updated successfully`);
+    Logger.debug(`Updated OT Request: ${JSON.stringify(result)}`);
+
     return result; // TODO: Implement this
   }
 
 async getTeamRequests(teamId: number) {
-  // 1) หา user ทั้งหมดในทีม
-  const teamMembers = await this.prisma.user.findMany({
-    where: { teamId },
-    select: { empId: true },
-  });
 
-  const empIds = teamMembers.map((u) => u.empId);
+  try {
 
-  if (empIds.length === 0) {
-    return []; // ไม่มีคนในทีม
-  }
+    Logger.log(`Fetching OT requests for team ${teamId}`);
 
-  // 2) หา attendance ของทุก empId
-  const teamAttendence = await this.prisma.attendence.findMany({
+    // Check team exists
+    const team = await this.prisma.team.findUnique({
+      where: { teamId },
+    });
+
+    if (!team) {
+      throw new NotFoundException(`Team with id ${teamId} not found`);
+    }
+
+    Logger.log(`Team lookup result for teamId ${teamId}: ${JSON.stringify(team)}`);
+
+    const result = await this.prisma.oTRequest.findMany({
     where: {
-      empId: { in: empIds },
-    },
-    select: { attendenceId: true },
-  });
-
-  const attendenceIds = teamAttendence.map((a) => a.attendenceId);
-
-  if (attendenceIds.length === 0) {
-    return []; // ไม่มี attendance ของทีม
-  }
-
-  // 3) หา OTRequest ของทุก attendenceId
-  const result = await this.prisma.oTRequest.findMany({
-    where: {
-      attendenceId: { in: attendenceIds },
+      attendence: {
+        user: {
+          teamId: teamId,
+        },
+      },
     },
     include: {
-      attendence: true, // ถ้าอยากดูข้อมูล attendance ด้วย
+      attendence: {
+        include: {
+          user: true,
+        },
+      },
     },
   });
 
-  return result;
+  Logger.log(`Fetched ${result.length} OT requests for team ${teamId}`);
+  Logger.debug(`OT Requests: ${JSON.stringify(result)}`);
+
+    // If result is empty → also return 404
+    if (result.length === 0) {
+      throw new NotFoundException(`No OT requests found for team ${teamId}`);
+    }
+
+  } catch (error) {
+    // Re-throw NestJS exceptions (BadRequest, NotFound)
+    if (error instanceof BadRequestException || error instanceof NotFoundException) {
+      throw error;
+    }
+
+    // Unknown / unexpected errors
+    console.error('Unexpected error in getTeamRequests:', error);
+    throw new InternalServerErrorException('Failed to fetch team requests.');
+  }
 }
+
 
   async createOvertimeRequest(dto: CreateOvertimeRequestDto) {
     // user มาจาก token ที่ AuthGuard decode ไว้แล้ว
 
     const now = new Date();
+
+    Logger.log(`Creating OT request for attendenceId ${dto.attendenceId}`);
 
     const result = await this.prisma.oTRequest.create({
       data: {
@@ -76,27 +98,69 @@ async getTeamRequests(teamId: number) {
       },
     });
 
+    Logger.log(`OT request created successfully for attendenceId ${dto.attendenceId}`);
+    Logger.debug(`Created OT Request: ${JSON.stringify(result)}`); 
+
     return result;
   }
 
-  async getrequestOvertime(dto: GetOvertimeRequestDto) {
+  async getrequestOvertime(attendenceId: number) {
 
+    Logger.log(`Fetching OT requests for attendenceId ${attendenceId}`);
+
+    try {
       const result = await this.prisma.oTRequest.findMany({
       where: {
-        attendenceId: dto.attendenceId,
+        attendenceId: attendenceId,
       },
     });
 
-    return result; // TODO: Implement this
+    Logger.log(`Fetched ${result.length} OT requests for attendenceId ${attendenceId}`);
+    Logger.debug(`OT Requests: ${JSON.stringify(result)}`);
+
+    if (result.length === 0) {
+      throw new NotFoundException(`No OT requests found for attendenceId ${attendenceId}`);
+    }
+
+    return result;
+   } catch (error) {
+    // Re-throw NestJS exceptions (BadRequest, NotFound)
+    if (error instanceof BadRequestException || error instanceof NotFoundException) {
+      throw error;
+    }
+
+    // Unknown / unexpected errors
+    console.error('Unexpected error in getTeamRequests:', error);
+    throw new InternalServerErrorException('Failed to fetch team requests.');
+  }
   }
 
   async getOvertimeById(otRequestId: number) {
-    const result = await this.prisma.extraPayRequest.findUnique({
+
+    Logger.log(`Fetching OT request with id ${otRequestId}`);
+
+    try {
+      const result = await this.prisma.oTRequest.findUnique({
       where: {
         requestId: otRequestId,
       },
     });
 
-      return result; // TODO: Implement this
+    Logger.log(`Fetched OT request with id ${otRequestId}: ${JSON.stringify(result)}`);
+
+    if (!result) {
+      throw new NotFoundException(`OT request with id ${otRequestId} not found`);
+    }
+    return result;
+    } catch (error) {
+    // Re-throw NestJS exceptions (BadRequest, NotFound)
+    if (error instanceof BadRequestException || error instanceof NotFoundException) {
+      throw error;
+    }
+
+    // Unknown / unexpected errors
+    console.error('Unexpected error in getTeamRequests:', error);
+    throw new InternalServerErrorException('Failed to fetch team requests.');
   }
+}
 }
