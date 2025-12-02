@@ -7,13 +7,12 @@ import {
 } from 'class-validator';
 
 export class CreateOvertimeRequestDto {
-  @IsString()
-  @IsNotEmpty()
-  id: number; // empId
-
   @IsNumber()
   @IsNotEmpty()
-  time: number; // otTime
+  attendenceId: number; // attendenceId
+
+  @IsString()
+  note: string; // note
 }
 
 export enum OvertimeStatus {
@@ -30,7 +29,12 @@ export class UpdateOvertimeStatusDto {
   @IsString()
   managerNote?: string; // หมายเหตุจากหัวหน้า
 
-  @IsOptional()
+  @IsString()
+  approvalBy?: string;
+}
+
+export class GetOvertimeRequestDto {
   @IsNumber()
-  approvalBy?: number;
+  @IsNotEmpty()
+  attendenceId: number; // attendenceId
 }

@@ -9,8 +9,7 @@ import {
   Put,
 } from '@nestjs/common';
 import { OvertimeService } from './overtime.service';
-// import { JwtAuthGuard } from '../auth/jwt-auth.guard'; // สมมติใช้ Cognito/JWT
-import { CreateOvertimeRequestDto, UpdateOvertimeStatusDto } from './dto/dto';
+import { CreateOvertimeRequestDto, GetOvertimeRequestDto, UpdateOvertimeStatusDto } from './dto/dto';
 
 @Controller('overtime')
 // @UseGuards(JwtAuthGuard)
@@ -21,15 +20,14 @@ export class OvertimeController {
   @Post('requests')
   createOvertimeRequest(
     @Body() dto: CreateOvertimeRequestDto,
-    @Req() req: any,
   ) {
-    return this.overtimeService.createOvertimeRequest(dto, req.user);
+    return this.overtimeService.createOvertimeRequest(dto);
   }
 
   // 2) ประวัติ OT ของตัวเอง
   @Get('requests')
-  getrequestOvertime(@Req() req: any) {
-    return this.overtimeService.getrequestOvertime(req.user);
+  getrequestOvertime(@Body() dto: GetOvertimeRequestDto) {
+    return this.overtimeService.getrequestOvertime(dto);
   }
 
   // 3) ดู OT รายการเดียว
