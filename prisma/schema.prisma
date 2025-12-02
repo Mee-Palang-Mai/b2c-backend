@@ -11,7 +11,7 @@ datasource db {
 // ========================= USER =========================
 //
 model User {
-  empId       Int      @id @map("emp_id")
+  empId       String      @id @map("emp_id")
   empNo       String   @map("emp_no")
   username    String   @map("username")
   password    String?  @map("password")
@@ -61,7 +61,7 @@ model Team {
 //
 model Loginout {
   transactionId Int      @id @map("transaction_id")
-  empId         Int      @unique @map("emp_id")
+  empId         String      @unique @map("emp_id")
   status        String   @map("status")
   timestamp     DateTime @map("timestamp")
 
@@ -75,7 +75,7 @@ model Loginout {
 //
 model Attendence {
   attendenceId Int      @id @map("attendence_id")
-  empId        Int      @map("emp_id")
+  empId        String      @map("emp_id")
   storeId      Int      @map("store_id")
   checkInLatitude  Float    @map("check_in_latitude")
   checkInlongitude Float    @map("check_in_longitude")
@@ -153,7 +153,7 @@ model Store {
 //
 model Payroll {
   payrollId    Int      @id @map("payroll_id")
-  empId        Int      @map("emp_id")
+  empId        String      @map("emp_id")
   salary       Float?   @map("salary")
   incentivePay Float?   @map("incentive_pay")
   extraTotal   Float?   @map("extra_total")
@@ -173,7 +173,7 @@ model Payroll {
 //
 model ExtraPayRequest {
   requestId     Int      @id @map("request_id")
-  empId         Int      @map("emp_id")
+  empId         String      @map("emp_id")
   extraTypeId   Int      @map("extra_type_id")
   status        String   @map("status")
   note          String   @map("note")
@@ -219,7 +219,7 @@ model ExtraPayType {
 //
 model DeductRequest {
   requestId    Int      @id @map("request_id")
-  empId        Int      @map("emp_id")
+  empId        String      @map("emp_id")
   deductTypeId Int      @map("deduct_type_id")
   status       String   @map("status")
   note         String   @map("note")
@@ -272,7 +272,7 @@ model LeaveType {
 }
 
 model LeaveBalance {
-  empId       Int  @map("emp_id")
+  empId       String  @map("emp_id")
   leaveTypeId Int  @map("leave_type_id")
   leaveCount  Int? @map("leave_count")
   leaveBalance Int? @map("leave_balance")
@@ -286,7 +286,7 @@ model LeaveBalance {
 
 model LeaveRequest {
   requestId     Int      @id @map("request_id")
-  empId         Int      @map("emp_id")
+  empId         String      @map("emp_id")
   leaveTypeId   Int      @map("leave_type_id")
   status        String   @map("status")
   note          String   @map("note")
