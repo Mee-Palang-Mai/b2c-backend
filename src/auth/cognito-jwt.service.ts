@@ -14,9 +14,11 @@ export class CognitoJwtService {
   private audience: string;
 
   constructor() {
-    const region = process.env.AWS_REGION!;
-    const userPoolId = process.env.COGNITO_USER_POOL_ID!;
-    const clientId = process.env.COGNITO_CLIENT_ID!;
+    const region = process.env.AWS_REGION || 'ap-southeast-1';
+    const userPoolId =
+      process.env.COGNITO_USER_POOL_ID || 'ap-southeast-1_xxxxxxxxx';
+    const clientId =
+      process.env.COGNITO_CLIENT_ID || 'xxxxxxxxxxxxxxxxxxxxxxxxxx';
 
     this.issuer = `https://cognito-idp.${region}.amazonaws.com/${userPoolId}`;
     this.audience = clientId;

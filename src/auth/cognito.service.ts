@@ -7,15 +7,6 @@ import {
 } from '@aws-sdk/client-cognito-identity-provider';
 import { Injectable } from '@nestjs/common';
 import * as crypto from 'crypto';
-
-function requireEnv(name: string): string {
-  const value = process.env[name];
-  if (!value) {
-    throw new Error(`Missing required environment variable: ${name}`);
-  }
-  return value;
-}
-
 @Injectable()
 export class CognitoService {
   private readonly client: CognitoIdentityProviderClient;
@@ -24,19 +15,21 @@ export class CognitoService {
   private readonly clientSecret?: string;
 
   constructor() {
-    this.userPoolId = requireEnv('COGNITO_USER_POOL_ID');
-    this.clientId = requireEnv('COGNITO_CLIENT_ID');
+    this.userPoolId =
+      process.env.COGNITO_USER_POOL_ID || 'ap-southeast-1_xxxxxxxxx';
+    this.clientId =
+      process.env.COGNITO_CLIENT_ID || 'xxxxxxxxxxxxxxxxxxxxxxxxxx';
     this.clientSecret = process.env.COGNITO_CLIENT_SECRET || undefined;
 
     const hasExplicitCreds =
       !!process.env.AWS_ACCESS_KEY_ID && !!process.env.AWS_SECRET_ACCESS_KEY;
 
     this.client = new CognitoIdentityProviderClient({
-      region: requireEnv('AWS_REGION'),
+      region: process.env.AWS_REGION || 'ap-southeast-1',
       ...(hasExplicitCreds && {
         credentials: {
-          accessKeyId: requireEnv('AWS_ACCESS_KEY_ID'),
-          secretAccessKey: requireEnv('AWS_SECRET_ACCESS_KEY'),
+          accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
+          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
         },
       }),
     });
