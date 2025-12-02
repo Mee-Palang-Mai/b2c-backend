@@ -26,8 +26,8 @@ export class OvertimeController {
 
   // 2) ประวัติ OT ของตัวเอง
   @Get('requests')
-  getrequestOvertime(@Body() dto: GetOvertimeRequestDto) {
-    return this.overtimeService.getrequestOvertime(dto);
+  getrequestOvertime(@Req() req: any) {
+    return this.overtimeService.getrequestOvertime(req.user.attendenceId);
   }
 
   // 3) ดู OT รายการเดียว
