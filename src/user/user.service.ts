@@ -41,8 +41,8 @@ export class UserService {
         cognitoSub: dto.cognitoSub,
         workStart: new Date(),
         workStatus: 'ACTIVE',
-        createDate: new Date(),
-        updateDate: new Date(),
+        createAt: new Date(),
+        updateAt: new Date(),
       },
     });
   }
@@ -61,7 +61,7 @@ export class UserService {
     }
 
     const u = user as {
-      empId: number;
+      empId: string;
       empNo: string;
       username: string;
       name: string;

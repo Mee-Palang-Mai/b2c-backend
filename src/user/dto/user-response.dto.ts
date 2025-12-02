@@ -1,5 +1,5 @@
 export class UserResponseDto {
-  empId!: number;
+  empId!: string;
   empNo!: string;
   username!: string;
   name!: string;
