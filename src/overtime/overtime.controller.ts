@@ -9,7 +9,11 @@ import {
   Put,
 } from '@nestjs/common';
 import { OvertimeService } from './overtime.service';
-import { CreateOvertimeRequestDto, GetOvertimeRequestDto, UpdateOvertimeStatusDto } from './dto/dto';
+import {
+  CreateOvertimeRequestDto,
+  GetOvertimeRequestDto,
+  UpdateOvertimeStatusDto,
+} from './dto/dto';
 
 @Controller('overtime')
 // @UseGuards(JwtAuthGuard)
@@ -18,9 +22,7 @@ export class OvertimeController {
 
   // 1) ยื่นคำขอ OT
   @Post('requests')
-  createOvertimeRequest(
-    @Body() dto: CreateOvertimeRequestDto,
-  ) {
+  createOvertimeRequest(@Body() dto: CreateOvertimeRequestDto) {
     return this.overtimeService.createOvertimeRequest(dto);
   }
 
