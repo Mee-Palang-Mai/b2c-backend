@@ -1,0 +1,35 @@
+name: Continuous Integration (CI) - Build and Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize, reopened]
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Run Tests (Unit/Integration)
+        run: npm run test
+
+      - name: Check Code Formatting
+        run: npm run format -- --check
+
+      - name: Build NestJS Application
+        run: npm run build
