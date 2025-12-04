@@ -11,6 +11,8 @@ import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
 import { AuthCookies } from 'src/types/auth-user.type';
 import * as jwt from 'jsonwebtoken';
+import { ForgotPasswordDto } from './dto/forgotPassword.dto';
+import { ConfirmForgotPasswordDto } from './dto/confirmForgotPassword.dto';
 
 function decodeUsernameFromIdToken(idToken: string): string {
   const decoded = jwt.decode(idToken) as { [k: string]: unknown } | null;
@@ -43,13 +45,16 @@ export class AuthService {
   };
 
   async signup(dto: SignupDto) {
-    try {
-      const { username, password, email } = dto;
+    const { username, password, email } = dto;
+    let cognitoCreated = false;
 
+    try {
       const { sub } = await this.cognito.adminCreateUserWithSub(
         username,
         email ?? '',
       );
+
+      cognitoCreated = true;
 
       if (!sub) {
         throw new BadRequestException('Cognito did not return user id');
@@ -67,6 +72,10 @@ export class AuthService {
         user: this.userService.formatUser(user),
       };
     } catch (err) {
+      if (cognitoCreated) {
+        await this.cognito.deleteUser(username);
+      }
+
       this.throwAuthError(err);
     }
   }
@@ -116,6 +125,40 @@ export class AuthService {
           cognitoSub: user.cognitoSub,
         },
       };
+    } catch (err) {
+      this.throwAuthError(err);
+    }
+  }
+
+  async forgotPassword(dto: ForgotPasswordDto) {
+    try {
+      const { username } = dto;
+
+      const user = await this.userService.findByUsername(username);
+      if (!user) throw new BadRequestException('User not found');
+
+      const forgotPasswordUsername = user.email ?? user.username;
+
+      return await this.cognito.forgotPassword(forgotPasswordUsername);
+    } catch (err) {
+      this.throwAuthError(err);
+    }
+  }
+
+  async confirmForgotPassword(dto: ConfirmForgotPasswordDto) {
+    try {
+      const { username, code, newPassword } = dto;
+
+      const user = await this.userService.findByUsername(username);
+      if (!user) throw new BadRequestException('User not found');
+
+      const forgotPasswordUsername = user.email ?? user.username;
+
+      return await this.cognito.confirmForgotPassword(
+        forgotPasswordUsername,
+        code,
+        newPassword,
+      );
     } catch (err) {
       this.throwAuthError(err);
     }

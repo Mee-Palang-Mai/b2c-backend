@@ -11,25 +11,25 @@ datasource db {
 // ========================= USER =========================
 //
 model User {
-  empId       String      @id @default(uuid()) @map("emp_id")
-  empNo       String   @map("emp_no")
-  username    String   @map("username")
-  password    String?  @map("password")
-  name        String   @map("emp_name")
-  nickName    String?  @map("nick_name")
-  cognitoSub  String   @map("cognito_sub")
-  registNo    String?  @map("regist_no")
-  phoneNumber String?  @map("phone_number")
-  email       String?  @map("email")
-  empLevel    String?  @map("emp_level")
-  teamId      String?     @map("team_id")
-  workStart   DateTime @map("work_start_date")
-  workStatus  String   @map("work_status")
-  createAt    DateTime @default(now()) @map("created_at")
-  updateAt    DateTime @updatedAt @map("updated_at")
+  empId       String    @id @default(uuid()) @map("emp_id")
+  empNo       String    @map("emp_no")
+  username    String    @map("username")
+  password    String?   @map("password")
+  name        String    @map("emp_name")
+  nickName    String?   @map("nick_name")
+  cognitoSub  String    @map("cognito_sub")
+  registNo    String?   @map("regist_no")
+  phoneNumber String?   @map("phone_number")
+  email       String?   @map("email")
+  empLevel    String?   @map("emp_level")
+  teamId      String?   @map("team_id")
+  workStart   DateTime  @map("work_start_date")
+  workStatus  String    @map("work_status")
+  createAt    DateTime  @default(now()) @map("created_at")
+  updateAt    DateTime  @updatedAt @map("updated_at")
   deletedAt   DateTime? @map("deleted_at")
 
-  team             Team?              @relation(fields: [teamId], references: [teamId])
+  team             Team?             @relation(fields: [teamId], references: [teamId])
   loginout         Loginout?
   attendences      Attendence[]
   extraPayRequests ExtraPayRequest[]
@@ -45,10 +45,10 @@ model User {
 // ========================= TEAM =========================
 //
 model Team {
-  teamId    String      @id @default(uuid()) @map("team_id")
-  name      String   @map("name")
-  createAt  DateTime @default(now()) @map("created_at")
-  updateAt  DateTime @updatedAt @map("updated_at")
+  teamId    String    @id @default(uuid()) @map("team_id")
+  name      String    @map("name")
+  createAt  DateTime  @default(now()) @map("created_at")
+  updateAt  DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
 
   users User[]
@@ -60,8 +60,8 @@ model Team {
 // ========================= LOGINOUT =========================
 //
 model Loginout {
-  transactionId String      @id @map("transaction_id")
-  empId         String      @unique @map("emp_id")
+  transactionId String   @id @map("transaction_id")
+  empId         String   @unique @map("emp_id")
   status        String   @map("status")
   timestamp     DateTime @map("timestamp")
 
@@ -74,22 +74,22 @@ model Loginout {
 // ========================= ATTENDENCE =========================
 //
 model Attendence {
-  attendenceId       String   @id @default(uuid()) @map("attendence_id")
-  empId        String   @map("emp_id")
-  placeId      String   @map("place_id")
-  checkInLatitude  Float    @map("check_in_latitude")
-  checkInlongitude Float    @map("check_in_longitude")
-  checkInDatetime  DateTime @map("check_in_datetime")
-  checkOutlatitude Float?   @map("check_out_latitude")
-  checkOutlongitude Float?  @map("check_out_longitude")
-  checkOutDatetime DateTime? @map("check_out_datetime")
-  status           String   @map("status")
-  isOt             Boolean  @map("is_ot")
-  createAt         DateTime @default(now()) @map("created_at")
-  updateAt         DateTime @updatedAt @map("updated_at")
-  deletedAt        DateTime? @map("deleted_at")
+  attendenceId      String    @id @default(uuid()) @map("attendence_id")
+  empId             String    @map("emp_id")
+  placeId           String    @map("place_id")
+  checkInLatitude   Float     @map("check_in_latitude")
+  checkInlongitude  Float     @map("check_in_longitude")
+  checkInDatetime   DateTime  @map("check_in_datetime")
+  checkOutlatitude  Float?    @map("check_out_latitude")
+  checkOutlongitude Float?    @map("check_out_longitude")
+  checkOutDatetime  DateTime? @map("check_out_datetime")
+  status            String    @map("status")
+  isOt              Boolean   @map("is_ot")
+  createAt          DateTime  @default(now()) @map("created_at")
+  updateAt          DateTime  @updatedAt @map("updated_at")
+  deletedAt         DateTime? @map("deleted_at")
 
-  user User   @relation(fields: [empId], references: [empId])
+  user  User  @relation(fields: [empId], references: [empId])
   place Place @relation(fields: [placeId], references: [placeId])
 
   ot         OT[]
@@ -116,14 +116,14 @@ model OT {
 // ========================= OT REQUEST =========================
 //
 model OTRequest {
-  requestId     String   @id @map("request_id")
-  attendenceId  String   @map("attendence_id")
-  status        String   @map("status")
-  note          String   @map("note")
-  approvalBy    String?  @map("approval_by")
-  createAt      DateTime @map("created_at")
-  updateAt      DateTime @map("updated_at")
-  deletedAt     DateTime? @map("deleted_at")
+  requestId    String    @id @map("request_id")
+  attendenceId String    @map("attendence_id")
+  status       String    @map("status")
+  note         String    @map("note")
+  approvalBy   String?   @map("approval_by")
+  createAt     DateTime  @map("created_at")
+  updateAt     DateTime  @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
 
   attendence Attendence @relation(fields: [attendenceId], references: [attendenceId])
 
@@ -134,14 +134,14 @@ model OTRequest {
 // ========================= PLACE =========================
 //
 model Place {
-  placeId    String   @id @map("place_id")
-  placeName  String   @map("place_name")
-  placeType  String   @map("place_type")
-  latitude   Float    @map("latitude")
-  longitude  Float    @map("longitude")
-  createAt   DateTime @map("created_at")
-  updateAt   DateTime @map("updated_at")
-  deletedAt  DateTime? @map("deleted_at")
+  placeId   String    @id @map("place_id")
+  placeName String    @map("place_name")
+  placeType String    @map("place_type")
+  latitude  Float     @map("latitude")
+  longitude Float     @map("longitude")
+  createAt  DateTime  @map("created_at")
+  updateAt  DateTime  @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
 
   attendences Attendence[]
 
@@ -153,7 +153,7 @@ model Place {
 //
 model Payroll {
   payrollId    String   @id @map("payroll_id")
-  empId        String      @map("emp_id")
+  empId        String   @map("emp_id")
   salary       Float?   @map("salary")
   incentivePay Float?   @map("incentive_pay")
   extraTotal   Float?   @map("extra_total")
@@ -173,7 +173,7 @@ model Payroll {
 //
 model ExtraPayRequest {
   requestId     String   @id @map("request_id")
-  empId         String      @map("emp_id")
+  empId         String   @map("emp_id")
   extraTypeId   String   @map("extra_type_id")
   status        String   @map("status")
   note          String   @map("note")
@@ -184,9 +184,9 @@ model ExtraPayRequest {
   updateAt      DateTime @map("updated_at")
   deletedAt     DateTime @map("deleted_at")
 
-  user        User        @relation(fields: [empId], references: [empId])
-  extraPayType ExtraPayType @relation(fields: [extraTypeId], references: [extraTypeId])
-  totals      ExtraPayTotal[]
+  user         User            @relation(fields: [empId], references: [empId])
+  extraPayType ExtraPayType    @relation(fields: [extraTypeId], references: [extraTypeId])
+  totals       ExtraPayTotal[]
 
   @@map("Extra pay Request")
 }
@@ -204,7 +204,7 @@ model ExtraPayTotal {
 }
 
 model ExtraPayType {
-  extraTypeId String   @id @map("extra_type_id")
+  extraTypeId String  @id @map("extra_type_id")
   typeName    String  @map("type_name")
   payRate     String? @map("pay_rate")
   rateType    String? @map("rate_type")
@@ -218,18 +218,18 @@ model ExtraPayType {
 // ========================= DEDUCT =========================
 //
 model DeductRequest {
-  requestId    String   @id @map("request_id")
-  empId        String      @map("emp_id")
-  deductTypeId String   @map("deduct_type_id")
-  status       String   @map("status")
-  note         String   @map("note")
-  approvalBy   String?  @map("approval_by")
-  createAt     DateTime @map("created_at")
-  updateAt     DateTime @map("updated_at")
+  requestId    String    @id @map("request_id")
+  empId        String    @map("emp_id")
+  deductTypeId String    @map("deduct_type_id")
+  status       String    @map("status")
+  note         String    @map("note")
+  approvalBy   String?   @map("approval_by")
+  createAt     DateTime  @map("created_at")
+  updateAt     DateTime  @map("updated_at")
   deletedAt    DateTime? @map("deleted_At")
 
-  user       User       @relation(fields: [empId], references: [empId])
-  deductType DeductType @relation(fields: [deductTypeId], references: [deductTypeId])
+  user       User          @relation(fields: [empId], references: [empId])
+  deductType DeductType    @relation(fields: [deductTypeId], references: [deductTypeId])
   totals     DeductTotal[]
 
   @@map("Deduct Request")
@@ -248,7 +248,7 @@ model DeductTotal {
 }
 
 model DeductType {
-  deductTypeId String   @id @map("deduct_type_id")
+  deductTypeId String  @id @map("deduct_type_id")
   typeName     String  @map("type_name")
   deductRate   Float?  @map("deduct_rate")
   rateType     String? @map("rate_type")
@@ -262,8 +262,8 @@ model DeductType {
 // ========================= LEAVE =========================
 //
 model LeaveType {
-  leaveTypeId String   @id @map("leave_type_id")
-  typeName    String   @map("type_name")
+  leaveTypeId String @id @map("leave_type_id")
+  typeName    String @map("type_name")
 
   leaveRequests LeaveRequest[]
   leaveBalances LeaveBalance[]
@@ -272,10 +272,10 @@ model LeaveType {
 }
 
 model LeaveBalance {
-  empId       String  @map("emp_id")
-  leaveTypeId String  @map("leave_type_id")
-  leaveCount  Int? @map("leave_count")
-  leaveBalance Int? @map("leave_balance")
+  empId        String @map("emp_id")
+  leaveTypeId  String @map("leave_type_id")
+  leaveCount   Int?   @map("leave_count")
+  leaveBalance Int?   @map("leave_balance")
 
   leaveType LeaveType @relation(fields: [leaveTypeId], references: [leaveTypeId])
   user      User      @relation(fields: [empId], references: [empId])
@@ -286,7 +286,7 @@ model LeaveBalance {
 
 model LeaveRequest {
   requestId     String   @id @map("request_id")
-  empId         String      @map("emp_id")
+  empId         String   @map("emp_id")
   leaveTypeId   String   @map("leave_type_id")
   status        String   @map("status")
   note          String   @map("note")
