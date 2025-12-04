@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/database/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserResponseDto } from './dto/user-response.dto';
-
+import { randomUUID } from 'crypto';
 @Injectable()
 export class UserService {
   constructor(private readonly prisma: PrismaService) {}
@@ -27,9 +27,11 @@ export class UserService {
   }
 
   async createUser(dto: CreateUserDto) {
+    const now = new Date();
+    const id = randomUUID();
     return this.prisma.user.create({
       data: {
-        empId: dto.empId,
+        empId: id,
         empNo: dto.empNo,
         username: dto.username,
         name: dto.name,
@@ -39,10 +41,10 @@ export class UserService {
         empLevel: dto.empLevel ?? null,
         teamId: dto.teamId ?? null,
         cognitoSub: dto.cognitoSub,
-        workStart: new Date(),
+        workStart: now,
         workStatus: 'ACTIVE',
-        createAt: new Date(),
-        updateAt: new Date(),
+        createAt: now,
+        updateAt: now,
       },
     });
   }

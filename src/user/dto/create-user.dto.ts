@@ -1,5 +1,4 @@
 export class CreateUserDto {
-  empId!: string;
   empNo!: string;
   username!: string;
   name!: string;

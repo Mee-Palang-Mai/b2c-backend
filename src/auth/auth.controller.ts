@@ -6,6 +6,8 @@ import { AuthService } from './auth.service';
 import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
 import { AuthCookies } from 'src/types/auth-user.type';
+import { ForgotPasswordDto } from './dto/forgotPassword.dto';
+import { ConfirmForgotPasswordDto } from './dto/confirmForgotPassword.dto';
 
 @ApiTags('auth')
 @Controller('/auth')
@@ -54,5 +56,37 @@ export class AuthController {
   logout(@Res({ passthrough: true }) res: Response) {
     this.authService.clearAuthCookies(res);
     return { message: 'Logged out' };
+  }
+
+  @Post('forgot-password')
+  @ApiOperation({ summary: 'Send reset password code (OTP)' })
+  @ApiBody({ type: ForgotPasswordDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Password reset code sent successfully',
+  })
+  @ApiResponse({ status: 400, description: 'User does not exist' })
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    await this.authService.forgotPassword(dto);
+
+    return {
+      message: 'Reset code has been sent to your email or phone number',
+    };
+  }
+
+  @Post('confirm-forgot-password')
+  @ApiOperation({ summary: 'Confirm password reset using OTP' })
+  @ApiBody({ type: ConfirmForgotPasswordDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Password has been reset successfully',
+  })
+  @ApiResponse({ status: 400, description: 'Invalid or expired code' })
+  async confirmForgotPassword(@Body() dto: ConfirmForgotPasswordDto) {
+    await this.authService.confirmForgotPassword(dto);
+
+    return {
+      message: 'Password changed successfully. Please login again.',
+    };
   }
 }

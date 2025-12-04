@@ -4,6 +4,11 @@ import {
   AdminSetUserPasswordCommand,
   CognitoIdentityProviderClient,
   InitiateAuthCommand,
+  ForgotPasswordCommand,
+  ConfirmForgotPasswordCommand,
+  AdminDeleteUserCommand,
+  ForgotPasswordCommandInput,
+  ConfirmForgotPasswordCommandInput,
 } from '@aws-sdk/client-cognito-identity-provider';
 import { Injectable } from '@nestjs/common';
 import * as crypto from 'crypto';
@@ -74,7 +79,10 @@ export class CognitoService {
         new AdminCreateUserCommand({
           UserPoolId: this.userPoolId,
           Username: username,
-          UserAttributes: [{ Name: 'email', Value: email }],
+          UserAttributes: [
+            { Name: 'email', Value: email },
+            { Name: 'email_verified', Value: 'true' },
+          ],
           MessageAction: 'SUPPRESS',
         }),
       );
@@ -158,6 +166,57 @@ export class CognitoService {
         result.User?.Attributes?.find((a) => a.Name === 'sub')?.Value ?? null;
 
       return { result, sub };
+    } catch (err) {
+      this.handleAwsError(err);
+    }
+  }
+
+  async forgotPassword(username: string) {
+    try {
+      const input: ForgotPasswordCommandInput = {
+        ClientId: this.clientId,
+        Username: username,
+      };
+
+      const secretHash = this.getSecretHash(username);
+      if (secretHash) input.SecretHash = secretHash;
+
+      return this.client.send(new ForgotPasswordCommand(input));
+    } catch (err) {
+      this.handleAwsError(err);
+    }
+  }
+
+  async confirmForgotPassword(
+    username: string,
+    code: string,
+    newPassword: string,
+  ) {
+    try {
+      const input: ConfirmForgotPasswordCommandInput = {
+        ClientId: this.clientId,
+        Username: username,
+        ConfirmationCode: code,
+        Password: newPassword,
+      };
+
+      const secretHash = this.getSecretHash(username);
+      if (secretHash) input.SecretHash = secretHash;
+
+      return this.client.send(new ConfirmForgotPasswordCommand(input));
+    } catch (err) {
+      this.handleAwsError(err);
+    }
+  }
+
+  async deleteUser(username: string): Promise<void> {
+    try {
+      await this.client.send(
+        new AdminDeleteUserCommand({
+          UserPoolId: this.userPoolId,
+          Username: username,
+        }),
+      );
     } catch (err) {
       this.handleAwsError(err);
     }
